@@ -88,6 +88,13 @@ function App() {
   const [prevChats, setPrevChats] = useState([]);
   const [newChat, setNewChat] = useState(true);
   const [allThreads, setAllThreads] = useState([]);
+  const [selectedModel, setSelectedModel] = useState(() => {
+    return localStorage.getItem("selected_model") || "llama-3.1-8b-instant";
+  });
+
+  useEffect(() => {
+    localStorage.setItem("selected_model", selectedModel);
+  }, [selectedModel]);
 
   const providerValues = {
     prompt,
@@ -108,6 +115,8 @@ function App() {
     setGuestCount,
     showAuthModal,
     setShowAuthModal,
+    selectedModel,
+    setSelectedModel,
   };
 
   if (!isAuthReady) return null; // wait until we check token

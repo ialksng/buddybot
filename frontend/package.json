@@ -17,6 +17,7 @@
     "react-router-dom": "^7.9.5",
     "react-spinners": "^0.17.0",
     "rehype-highlight": "^7.0.2",
+    "remark-gfm": "^4.0.1",
     "uuid": "^13.0.0"
   },
   "devDependencies": {

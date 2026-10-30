@@ -1,8 +1,13 @@
 import express from "express";
 import Thread from "../models/Thread.js";
-import getGroqAPIResponse from "../utils/groq.js";
+import getGroqAPIResponse, { GROQ_MODELS } from "../utils/groq.js";
 
 const router = express.Router();
+
+// List available AI models
+router.get(["/models", "/chat/models"], (req, res) => {
+    res.json(GROQ_MODELS);
+});
 
 // test
 router.post("/test", async(req, res) => {
@@ -72,7 +77,7 @@ router.delete(["/thread/:threadId", "/chat/thread/:threadId"], async(req, res) =
 
 // newChat
 router.post(["/chat", "/"], async(req, res) => {
-    const {threadId, message} = req.body;
+    const {threadId, message, model} = req.body;
 
     if(!threadId || !message) {
         return res.status(400).json({error: "Missing required fields"});
@@ -93,7 +98,7 @@ router.post(["/chat", "/"], async(req, res) => {
             }
             thread.messages.push({role: "user", content: message});
         }
-        const assistantReply = await getGroqAPIResponse(thread.messages);
+        const assistantReply = await getGroqAPIResponse(thread.messages, model);
         thread.messages.push({role: "assistant", content: assistantReply});
         thread.updatedAt = new Date();
 
