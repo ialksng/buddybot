@@ -31,16 +31,17 @@ router.get(["/thread", "/chat/thread"], async(req, res) => {
         if (!req.user?.id) {
             return res.json([]);
         }
-        const threads = await Thread.find({
-            $or: [
-                { userId: req.user.id },
-                { userId: String(req.user.id) }
-            ]
-        }).sort({updatedAt: -1});
+        const userIdStr = String(req.user.id);
+        const queryOr = [{ userId: userIdStr }];
+        if (mongoose.Types.ObjectId.isValid(userIdStr)) {
+            queryOr.push({ userId: new mongoose.Types.ObjectId(userIdStr) });
+        }
+
+        const threads = await Thread.find({ $or: queryOr }).sort({ updatedAt: -1 });
         res.json(threads);
     } catch(err) {
-        console.log(err);
-        res.status(500).json({error: "Failed to fetch threads"});
+        console.error("Failed to fetch threads:", err);
+        res.status(500).json({ error: "Failed to fetch threads" });
     }
 });
 
@@ -86,18 +87,22 @@ router.post(["/chat", "/"], async(req, res) => {
         return res.status(400).json({error: "Missing required fields"});
     }
     try {
+        const uid = req.user?.id
+            ? (mongoose.Types.ObjectId.isValid(req.user.id) ? new mongoose.Types.ObjectId(req.user.id) : req.user.id)
+            : null;
+
         let thread = await Thread.findOne({threadId});
         if(!thread) {
             // create a new thread in DB
             thread = new Thread({
                 threadId,
-                title: message,
-                userId: req.user?.id || null,
+                title: message.substring(0, 50),
+                userId: uid,
                 messages: [{role: "user", content: message}]
             })
         } else {
-            if (req.user?.id && !thread.userId) {
-                thread.userId = req.user.id;
+            if (uid && !thread.userId) {
+                thread.userId = uid;
             }
             thread.messages.push({role: "user", content: message});
         }
@@ -109,7 +114,7 @@ router.post(["/chat", "/"], async(req, res) => {
         res.json({reply: assistantReply});
 
     } catch (err) {
-        console.log(err);
+        console.error("Chat error:", err);
         res.status(500).json({error: "Something went wrong"});
     }
 });
@@ -121,14 +126,18 @@ router.post("/claim-thread", async (req, res) => {
         return res.status(400).json({ error: "Missing threadId or unauthorized" });
     }
     try {
+        const uid = mongoose.Types.ObjectId.isValid(req.user.id)
+            ? new mongoose.Types.ObjectId(req.user.id)
+            : req.user.id;
+
         const thread = await Thread.findOneAndUpdate(
-            { threadId, userId: null },
-            { userId: req.user.id },
+            { threadId },
+            { $set: { userId: uid } },
             { new: true }
         );
         res.json({ success: true, thread });
     } catch (err) {
-        console.log(err);
+        console.error("Failed to claim thread:", err);
         res.status(500).json({ error: "Failed to claim thread" });
     }
 });

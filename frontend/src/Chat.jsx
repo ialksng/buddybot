@@ -7,11 +7,21 @@ import rehypeHighlight from "rehype-highlight";
 import "highlight.js/styles/tokyo-night-dark.css";
 import buddyBotLogo from "./assets/buddy-bot.png";
 
-function CodeBlock({ language, children }) {
+function extractText(node) {
+    if (!node) return "";
+    if (typeof node === "string") return node;
+    if (typeof node === "number") return String(node);
+    if (Array.isArray(node)) return node.map(extractText).join("");
+    if (node.props && node.props.children) return extractText(node.props.children);
+    return "";
+}
+
+function CodeBlock({ language, rawCode, children }) {
     const [copied, setCopied] = useState(false);
 
     const handleCopy = () => {
-        navigator.clipboard.writeText(String(children));
+        const textToCopy = rawCode || extractText(children);
+        navigator.clipboard.writeText(textToCopy);
         setCopied(true);
         setTimeout(() => setCopied(false), 2000);
     };
@@ -108,13 +118,23 @@ function Chat() {
                                             remarkPlugins={[remarkGfm]}
                                             rehypePlugins={[rehypeHighlight]}
                                             components={{
+                                                pre({ children }) {
+                                                    return <>{children}</>;
+                                                },
                                                 code({ node, inline, className, children, ...props }) {
                                                     const match = /language-(\w+)/.exec(className || "");
-                                                    return !inline && match ? (
-                                                        <CodeBlock language={match[1]} {...props}>
-                                                            {String(children).replace(/\n$/, "")}
-                                                        </CodeBlock>
-                                                    ) : (
+                                                    if (!inline && (match || className)) {
+                                                        return (
+                                                            <CodeBlock
+                                                                language={match ? match[1] : ""}
+                                                                rawCode={extractText(children)}
+                                                                {...props}
+                                                            >
+                                                                {children}
+                                                            </CodeBlock>
+                                                        );
+                                                    }
+                                                    return (
                                                         <code className="inline-code" {...props}>
                                                             {children}
                                                         </code>

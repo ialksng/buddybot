@@ -116,6 +116,20 @@ function ChatWindow() {
             setPrevChats(prev => [...prev, { role: "assistant", content: assistantReply }]);
             setReply(assistantReply);
 
+            // If user is authenticated, refresh sidebar thread list so new chat appears immediately
+            if (token) {
+                fetch(`${API_URL}/api/thread`, {
+                    headers: { "Authorization": `Bearer ${token}` }
+                })
+                .then(r => r.json())
+                .then(threads => {
+                    if (Array.isArray(threads)) {
+                        setAllThreads(threads.map(t => ({ threadId: t.threadId, title: t.title })));
+                    }
+                })
+                .catch(() => {});
+            }
+
             // If guest user just used their free message
             if (!isAuthenticated && guestCount === 0) {
                 const nextCount = 1;

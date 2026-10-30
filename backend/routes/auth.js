@@ -18,13 +18,13 @@ router.post("/forgot-password", forgotPassword);
 router.get("/me", (req, res) => {
   const token = req.headers.authorization?.split(" ")[1];
   if (!token || token === "null" || token === "undefined") {
-    return res.status(401).json({ authenticated: false });
+    return res.status(200).json({ authenticated: false });
   }
   try {
     const decoded = jwt.verify(token, getJwtSecret());
-    return res.json({ authenticated: true, user: decoded });
+    return res.status(200).json({ authenticated: true, user: decoded });
   } catch (err) {
-    return res.status(401).json({ authenticated: false });
+    return res.status(200).json({ authenticated: false });
   }
 });
 
