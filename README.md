@@ -1,6 +1,6 @@
 # BuddyBot 🤖
 
-Buddy Bot is a full-stack MERN-based AI chatbot application powered by OpenAI's API. It features threaded chat history, modern dark-themed UI, user authentication (JWT + Google OAuth), and seamless deployment support.
+Buddy Bot is a full-stack MERN-based AI chatbot application powered by Groq's high-speed inference API (Llama 3.3). It features threaded chat history, modern dark-themed UI, user authentication (JWT + Google OAuth), and seamless deployment support.
 
 ---
 
@@ -30,7 +30,8 @@ https://ialksng.me/work/projects/buddybot/app
 | Variable | Description | Example |
 |---|---|---|
 | `MONGODB_URI` | MongoDB Atlas connection string | `mongodb+srv://...` |
-| `OPENAI_API_KEY` | OpenAI API Secret Key | `sk-...` |
+| `GROQ_API_KEY` | Groq API Secret Key | `gsk_...` |
+| `GROQ_MODEL` | *(Optional)* Groq Model | `llama-3.3-70b-versatile` |
 | `JWT_SECRET` | Secret key for JWT auth tokens | `your_secure_random_string` |
 | `SESSION_SECRET` | Session secret | `your_session_secret` |
 | `CLIENT_URL` | Your frontend production URL | `https://ialksng.me/work/projects/buddybot/app` |

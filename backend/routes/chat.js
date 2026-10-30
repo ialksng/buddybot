@@ -1,6 +1,6 @@
 import express from "express";
 import Thread from "../models/Thread.js";
-import getOpenAIAPIResponse from "../utils/openai.js";
+import getGroqAPIResponse from "../utils/groq.js";
 
 const router = express.Router();
 
@@ -85,7 +85,7 @@ router.post(["/chat", "/"], async(req, res) => {
         } else {
             thread.messages.push({role: "user", content: message});
         }
-        const assistantReply = await getOpenAIAPIResponse(message);
+        const assistantReply = await getGroqAPIResponse(thread.messages);
         thread.messages.push({role: "assistant", content: assistantReply});
         thread.updatedAt = new Date();
 
