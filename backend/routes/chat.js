@@ -23,8 +23,12 @@ router.post("/test", async(req, res) => {
 // Get all threads
 router.get(["/thread", "/chat/thread"], async(req, res) => {
     try {
-        const threads = await Thread.find({}).sort({updatedAt: -1});
-        // desc order of updatedAt...most recent data on top
+        if (!req.user) {
+            return res.json([]);
+        }
+        const threads = await Thread.find({
+            $or: [{ userId: req.user.id }, { userId: { $exists: false } }]
+        }).sort({updatedAt: -1});
         res.json(threads);
     } catch(err) {
         console.log(err);
@@ -80,9 +84,13 @@ router.post(["/chat", "/"], async(req, res) => {
             thread = new Thread({
                 threadId,
                 title: message,
+                userId: req.user?.id || null,
                 messages: [{role: "user", content: message}]
             })
         } else {
+            if (req.user?.id && !thread.userId) {
+                thread.userId = req.user.id;
+            }
             thread.messages.push({role: "user", content: message});
         }
         const assistantReply = await getGroqAPIResponse(thread.messages);
@@ -95,6 +103,25 @@ router.post(["/chat", "/"], async(req, res) => {
     } catch (err) {
         console.log(err);
         res.status(500).json({error: "Something went wrong"});
+    }
+});
+
+// Claim a guest thread after logging in or signing up
+router.post("/claim-thread", async (req, res) => {
+    const { threadId } = req.body;
+    if (!threadId || !req.user) {
+        return res.status(400).json({ error: "Missing threadId or unauthorized" });
+    }
+    try {
+        const thread = await Thread.findOneAndUpdate(
+            { threadId, userId: null },
+            { userId: req.user.id },
+            { new: true }
+        );
+        res.json({ success: true, thread });
+    } catch (err) {
+        console.log(err);
+        res.status(500).json({ error: "Failed to claim thread" });
     }
 });
 

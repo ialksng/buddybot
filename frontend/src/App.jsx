@@ -14,6 +14,10 @@ function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(
     !!localStorage.getItem("token")
   );
+  const [guestCount, setGuestCount] = useState(() => {
+    return parseInt(localStorage.getItem("guest_msg_count") || "0", 10);
+  });
+  const [showAuthModal, setShowAuthModal] = useState(false);
 
   // ✅ Capture Google token early
   useEffect(() => {
@@ -23,7 +27,24 @@ function App() {
     if (token) {
       localStorage.setItem("token", token);
       setIsAuthenticated(true);
+      localStorage.removeItem("guest_msg_count");
+      setGuestCount(0);
       window.history.replaceState({}, "", window.location.pathname); // clean URL without stripping subpath
+
+      // Claim guest thread if exists
+      const guestThreadId = localStorage.getItem("guest_thread_id");
+      if (guestThreadId) {
+        const API_URL = import.meta.env.VITE_API_URL || "";
+        fetch(`${API_URL}/api/claim-thread`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`
+          },
+          body: JSON.stringify({ threadId: guestThreadId })
+        }).catch(err => console.log(err));
+        localStorage.removeItem("guest_thread_id");
+      }
     }
 
     setIsAuthReady(true);
@@ -49,37 +70,38 @@ function App() {
     setPrevChats,
     allThreads,
     setAllThreads,
+    isAuthenticated,
+    setIsAuthenticated,
+    guestCount,
+    setGuestCount,
+    showAuthModal,
+    setShowAuthModal,
   };
 
   if (!isAuthReady) return null; // wait until we check token
 
   const baseUrl = (import.meta.env.BASE_URL || "/work/projects/buddybot/app").replace(/\/$/, "");
 
+  const chatApp = (
+    <div className="app">
+      <MyContext.Provider value={providerValues}>
+        <Sidebar />
+        <ChatWindow />
+      </MyContext.Provider>
+    </div>
+  );
+
   return (
     <BrowserRouter basename={baseUrl}>
       <Routes>
-        <Route path="/" element={<Dashboard isAuthenticated={isAuthenticated} />} />
-        <Route path="/dashboard" element={<Dashboard isAuthenticated={isAuthenticated} />} />
+        {/* Direct chat on root */}
+        <Route path="/" element={chatApp} />
+        <Route path="/chat" element={chatApp} />
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
+        <Route path="/dashboard" element={<Navigate to="/" replace />} />
 
-        <Route
-          path="/chat"
-          element={
-            isAuthenticated ? (
-              <div className="app">
-                <MyContext.Provider value={providerValues}>
-                  <Sidebar />
-                  <ChatWindow />
-                </MyContext.Provider>
-              </div>
-            ) : (
-              <Navigate to="/login" replace />
-            )
-          }
-        />
-
-        {/* default redirect */}
+        {/* default redirect to chat */}
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>

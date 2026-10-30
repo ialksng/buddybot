@@ -5,7 +5,14 @@ import {v1 as uuidv1} from "uuid";
 import buddyBotLogo from "./assets/buddy-bot.png";
 
 function Sidebar() {
-  const {allThreads, setAllThreads, currThreadId, setNewChat, setPrompt, setReply, setCurrThreadId, setPrevChats} = useContext(MyContext);
+  const {
+    allThreads, setAllThreads,
+    currThreadId,
+    setNewChat, setPrompt, setReply,
+    setCurrThreadId, setPrevChats,
+    isAuthenticated,
+    setShowAuthModal
+  } = useContext(MyContext);
   const API_URL = import.meta.env.VITE_API_URL || "";
 
   const getAuthHeaders = () => {
@@ -14,6 +21,10 @@ function Sidebar() {
   };
 
   const getAllThreads = async () => {
+    if (!isAuthenticated) {
+      setAllThreads([]);
+      return;
+    }
     try {
       const response = await fetch(`${API_URL}/api/thread`, {
         headers: getAuthHeaders(),
@@ -29,8 +40,10 @@ function Sidebar() {
   };
 
   useEffect(() => {
-    getAllThreads();
-  }, [currThreadId])
+    if (isAuthenticated) {
+      getAllThreads();
+    }
+  }, [currThreadId, isAuthenticated]);
 
   const createNewChat = () => {
     setNewChat(true);
@@ -86,25 +99,35 @@ function Sidebar() {
         <span><i className="fa-solid fa-pen-to-square"></i></span>
       </button>
 
-      {/* history */}
-      <ul className="history">
-            {
-              allThreads?.map((thread, idx) => (
-                <li key={idx}
-                    onClick={() => changeThread(thread.threadId)}
-                            className={thread.threadId === currThreadId ? "highlighted": " "}
-                >
-                  {thread.title}
-                  <i className="fa-solid fa-trash"
-                    onClick={(e) => {
-                      e.stopPropagation(); // stop event bubbling
-                      deleteThread(thread.threadId);
-                    }}
-                  ></i>
-                </li>
-              ))
-            }
-      </ul>
+      {/* history or guest prompt */}
+      {isAuthenticated ? (
+        <ul className="history">
+          {allThreads?.map((thread, idx) => (
+            <li
+              key={idx}
+              onClick={() => changeThread(thread.threadId)}
+              className={thread.threadId === currThreadId ? "highlighted" : " "}
+            >
+              {thread.title}
+              <i
+                className="fa-solid fa-trash"
+                onClick={(e) => {
+                  e.stopPropagation(); // stop event bubbling
+                  deleteThread(thread.threadId);
+                }}
+              ></i>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <div className="sidebar-guest-box">
+          <p className="sidebar-guest-title">Save your chat history</p>
+          <p className="sidebar-guest-desc">Sign up to keep conversations, sync across devices, and pick up where you left off.</p>
+          <button className="sidebar-guest-btn" onClick={() => setShowAuthModal(true)}>
+            Sign up / Log in
+          </button>
+        </div>
+      )}
 
       {/* signup */}
       <div className="sign">

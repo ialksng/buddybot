@@ -20,7 +20,18 @@ export default function Login() {
         password,
       });
       localStorage.setItem("token", data.token);
-      navigate("/chat");
+      localStorage.removeItem("guest_msg_count");
+
+      // Claim guest thread if exists
+      const guestThreadId = localStorage.getItem("guest_thread_id");
+      if (guestThreadId) {
+        axios.post(`${API_URL}/api/claim-thread`, { threadId: guestThreadId }, {
+          headers: { Authorization: `Bearer ${data.token}` }
+        }).catch(() => {});
+        localStorage.removeItem("guest_thread_id");
+      }
+
+      navigate("/");
     } catch (err) {
       setError(err.response?.data?.message || "Login failed");
     }

@@ -122,3 +122,63 @@ input:focus {
     background-color: rgba(255, 255, 255, 0.15);
     border-radius: 6px;
 }
+
+/* Nav auth buttons for guest users */
+.nav-auth-actions {
+    margin: 1rem 2rem;
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+}
+
+.nav-auth-btn {
+    border: none;
+    font-size: 0.85rem;
+    font-weight: 600;
+    padding: 0.45rem 1rem;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.nav-auth-btn.login {
+    background: rgba(255, 255, 255, 0.15);
+    color: #ffffff;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.nav-auth-btn.login:hover {
+    background: rgba(255, 255, 255, 0.25);
+}
+
+.nav-auth-btn.signup {
+    background: #ef7722;
+    color: #ffffff;
+    box-shadow: 0 2px 8px rgba(239, 119, 34, 0.3);
+}
+
+.nav-auth-btn.signup:hover {
+    background: #d96515;
+}
+
+/* Guest limit notification banner */
+.guest-limit-banner {
+    background: rgba(239, 119, 34, 0.15);
+    border: 1px solid rgba(239, 119, 34, 0.35);
+    color: #ffffff;
+    padding: 0.5rem 1.25rem;
+    border-radius: 20px;
+    font-size: 0.82rem;
+    margin-bottom: 0.75rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.guest-limit-banner:hover {
+    background: rgba(239, 119, 34, 0.25);
+    transform: translateY(-1px);
+}
