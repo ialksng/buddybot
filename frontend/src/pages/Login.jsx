@@ -3,6 +3,7 @@ import axios from "axios";
 import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { API_URL, GOOGLE_AUTH_URL } from "../apiConfig.js";
+import { setStoredToken, setStoredUser } from "../storage.js";
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -25,15 +26,20 @@ export default function Login() {
         email,
         password,
       });
-      localStorage.setItem("token", data.token);
+      setStoredToken(data.token);
+      if (data.user) {
+        setStoredUser(data.user);
+      }
+      localStorage.removeItem("buddybot_guest_msg_count");
       localStorage.removeItem("guest_msg_count");
 
       // Claim guest thread if exists
-      const guestThreadId = localStorage.getItem("guest_thread_id");
+      const guestThreadId = localStorage.getItem("buddybot_guest_thread_id") || localStorage.getItem("guest_thread_id");
       if (guestThreadId) {
         axios.post(`${API_URL}/api/claim-thread`, { threadId: guestThreadId }, {
           headers: { Authorization: `Bearer ${data.token}` }
         }).catch(() => {});
+        localStorage.removeItem("buddybot_guest_thread_id");
         localStorage.removeItem("guest_thread_id");
       }
 

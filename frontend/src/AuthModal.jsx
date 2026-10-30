@@ -3,6 +3,7 @@ import { useState } from "react";
 import axios from "axios";
 import buddyBotLogo from "./assets/buddy-bot.png";
 import { API_URL, GOOGLE_AUTH_URL } from "./apiConfig.js";
+import { setStoredToken, setStoredUser } from "./storage.js";
 
 export default function AuthModal({ isOpen, onClose, onAuthSuccess, initialMode = "login" }) {
   if (!isOpen) return null;
@@ -24,15 +25,20 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess, initialMode 
       const payload = mode === "signup" ? { username, email, password } : { email, password };
 
       const { data } = await axios.post(endpoint, payload);
-      localStorage.setItem("token", data.token);
+      setStoredToken(data.token);
+      if (data.user) {
+        setStoredUser(data.user);
+      }
+      localStorage.removeItem("buddybot_guest_msg_count");
       localStorage.removeItem("guest_msg_count");
 
       // Claim guest thread if exists
-      const guestThreadId = localStorage.getItem("guest_thread_id");
+      const guestThreadId = localStorage.getItem("buddybot_guest_thread_id") || localStorage.getItem("guest_thread_id");
       if (guestThreadId) {
         axios.post(`${API_URL}/api/claim-thread`, { threadId: guestThreadId }, {
           headers: { Authorization: `Bearer ${data.token}` }
         }).catch(() => {});
+        localStorage.removeItem("buddybot_guest_thread_id");
         localStorage.removeItem("guest_thread_id");
       }
 

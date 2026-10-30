@@ -9,6 +9,19 @@ import { API_URL, BASE_PATH } from "./apiConfig.js";
 import Login from "./pages/Login.jsx";
 import Signup from "./pages/Signup.jsx";
 import Dashboard from "./pages/Dashboard.jsx";
+import {
+  getStoredToken,
+  setStoredToken,
+  getStoredUser,
+  setStoredUser,
+  getCachedThreads,
+  setCachedThreads,
+  getActiveThreadId,
+  setActiveThreadId,
+  getActiveChats,
+  setActiveChats,
+  clearAllBuddyBotStorage,
+} from "./storage.js";
 
 const parseJwt = (token) => {
   try {
@@ -31,20 +44,13 @@ const parseJwt = (token) => {
 
 function App() {
   const [currentUser, setCurrentUser] = useState(() => {
-    try {
-      const saved = localStorage.getItem("user");
-      if (saved) return JSON.parse(saved);
-      const token = localStorage.getItem("token");
-      return parseJwt(token);
-    } catch {
-      return null;
-    }
+    return getStoredUser() || parseJwt(getStoredToken());
   });
 
   const [isAuthenticated, setIsAuthenticated] = useState(() => {
     const params = new URLSearchParams(window.location.search);
     const tokenFromUrl = params.get("token");
-    const token = tokenFromUrl || localStorage.getItem("token");
+    const token = tokenFromUrl || getStoredToken();
     if (!token || token === "null" || token === "undefined") return false;
     const parsed = parseJwt(token);
     if (!parsed) return false;
@@ -54,7 +60,7 @@ function App() {
 
   const [isAuthReady, setIsAuthReady] = useState(true);
   const [guestCount, setGuestCount] = useState(() => {
-    return parseInt(localStorage.getItem("guest_msg_count") || "0", 10);
+    return parseInt(localStorage.getItem("buddybot_guest_msg_count") || localStorage.getItem("guest_msg_count") || "0", 10);
   });
   const [showAuthModal, setShowAuthModal] = useState(false);
 
@@ -64,24 +70,25 @@ function App() {
     const tokenFromUrl = params.get("token");
 
     if (tokenFromUrl) {
-      localStorage.setItem("token", tokenFromUrl);
+      setStoredToken(tokenFromUrl);
+      localStorage.removeItem("buddybot_guest_msg_count");
       localStorage.removeItem("guest_msg_count");
       setGuestCount(0);
       setIsAuthenticated(true);
       const userObj = parseJwt(tokenFromUrl);
       if (userObj) {
         setCurrentUser(userObj);
-        localStorage.setItem("user", JSON.stringify(userObj));
+        setStoredUser(userObj);
       }
       window.history.replaceState({}, "", window.location.pathname);
     }
 
-    const token = tokenFromUrl || localStorage.getItem("token");
+    const token = tokenFromUrl || getStoredToken();
 
     // If no token, cleanly start as a guest user
     if (!token || token === "undefined" || token === "null" || token.trim() === "") {
-      localStorage.removeItem("token");
-      localStorage.removeItem("user");
+      setStoredToken(null);
+      setStoredUser(null);
       setIsAuthenticated(false);
       setCurrentUser(null);
       setIsAuthReady(true);
@@ -90,8 +97,8 @@ function App() {
 
     const parsed = parseJwt(token);
     if (parsed && parsed.exp && parsed.exp * 1000 < Date.now()) {
-      localStorage.removeItem("token");
-      localStorage.removeItem("user");
+      setStoredToken(null);
+      setStoredUser(null);
       setIsAuthenticated(false);
       setCurrentUser(null);
       setIsAuthReady(true);
@@ -102,7 +109,7 @@ function App() {
     setIsAuthenticated(true);
     if (parsed && !currentUser) {
       setCurrentUser(parsed);
-      localStorage.setItem("user", JSON.stringify(parsed));
+      setStoredUser(parsed);
     }
 
     // Verify token with backend
@@ -117,13 +124,14 @@ function App() {
           setIsAuthenticated(true);
           if (data.user) {
             setCurrentUser(data.user);
-            localStorage.setItem("user", JSON.stringify(data.user));
+            setStoredUser(data.user);
           }
+          localStorage.removeItem("buddybot_guest_msg_count");
           localStorage.removeItem("guest_msg_count");
           setGuestCount(0);
 
           // Claim guest thread if exists
-          const guestThreadId = localStorage.getItem("guest_thread_id");
+          const guestThreadId = localStorage.getItem("buddybot_guest_thread_id") || localStorage.getItem("guest_thread_id");
           if (guestThreadId) {
             fetch(`${API_URL}/api/claim-thread`, {
               method: "POST",
@@ -133,12 +141,13 @@ function App() {
               },
               body: JSON.stringify({ threadId: guestThreadId })
             }).catch(e => console.log(e));
+            localStorage.removeItem("buddybot_guest_thread_id");
             localStorage.removeItem("guest_thread_id");
           }
         } else if (parsed && parsed.exp && parsed.exp * 1000 < Date.now()) {
           // Token genuinely expired: reset cleanly to guest
-          localStorage.removeItem("token");
-          localStorage.removeItem("user");
+          setStoredToken(null);
+          setStoredUser(null);
           setIsAuthenticated(false);
           setCurrentUser(null);
         }
@@ -157,38 +166,23 @@ function App() {
   const [stopGenerationTrigger, setStopGenerationTrigger] = useState(0);
 
   const [currThreadId, setCurrThreadId] = useState(() => {
-    return localStorage.getItem("active_thread_id") || uuidv1();
+    return getActiveThreadId() || uuidv1();
   });
 
   const [prevChats, setPrevChats] = useState(() => {
-    try {
-      const cached = localStorage.getItem("active_thread_chats");
-      return cached ? JSON.parse(cached) : [];
-    } catch {
-      return [];
-    }
+    return getActiveChats();
   });
 
   const [newChat, setNewChat] = useState(() => {
-    try {
-      const cached = localStorage.getItem("active_thread_chats");
-      return !cached || JSON.parse(cached).length === 0;
-    } catch {
-      return true;
-    }
+    return getActiveChats().length === 0;
   });
 
   const [allThreads, setAllThreads] = useState(() => {
-    try {
-      const cached = localStorage.getItem("cached_threads");
-      return cached ? JSON.parse(cached) : [];
-    } catch {
-      return [];
-    }
+    return getCachedThreads();
   });
 
   const [selectedModel, setSelectedModel] = useState(() => {
-    const saved = localStorage.getItem("selected_model");
+    const saved = localStorage.getItem("buddybot_selected_model") || localStorage.getItem("selected_model");
     if (!saved || saved.includes("llama") || saved.includes("gemma") || saved.includes("mixtral")) {
       return "openai/gpt-oss-120b";
     }
@@ -198,18 +192,18 @@ function App() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   useEffect(() => {
-    localStorage.setItem("selected_model", selectedModel);
+    localStorage.setItem("buddybot_selected_model", selectedModel);
   }, [selectedModel]);
 
   useEffect(() => {
     if (currThreadId) {
-      localStorage.setItem("active_thread_id", currThreadId);
+      setActiveThreadId(currThreadId);
     }
   }, [currThreadId]);
 
   useEffect(() => {
     if (prevChats && prevChats.length > 0) {
-      localStorage.setItem("active_thread_chats", JSON.stringify(prevChats));
+      setActiveChats(prevChats);
     }
   }, [prevChats]);
 

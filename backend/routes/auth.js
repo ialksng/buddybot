@@ -204,8 +204,11 @@ router.get("/google/callback", (req, res, next) => {
           </div>
           <script>
             try {
+              localStorage.setItem("buddybot_token", "${token}");
+              localStorage.setItem("buddybot_user", JSON.stringify(${JSON.stringify(userPayload)}));
               localStorage.setItem("token", "${token}");
               localStorage.setItem("user", JSON.stringify(${JSON.stringify(userPayload)}));
+              localStorage.removeItem("buddybot_guest_msg_count");
               localStorage.removeItem("guest_msg_count");
             } catch (storageErr) {
               console.error("Storage error:", storageErr);

@@ -6,6 +6,13 @@ import { useContext, useState, useEffect, useRef } from "react";
 import { ScaleLoader } from "react-spinners";
 import { API_URL } from "./apiConfig.js";
 import { DEFAULT_MODELS } from "./models.js";
+import {
+    getStoredToken,
+    setStoredToken,
+    setStoredUser,
+    clearAllBuddyBotStorage,
+    setCachedThreads,
+} from "./storage.js";
 
 function ChatWindow() {
     const {
@@ -66,13 +73,7 @@ function ChatWindow() {
     const activeModelObj = models.find(m => m.id === selectedModel) || models[0] || DEFAULT_MODELS[0];
 
     const handleLogout = () => {
-        localStorage.removeItem("token");
-        localStorage.removeItem("user");
-        localStorage.removeItem("guest_msg_count");
-        localStorage.removeItem("guest_thread_id");
-        localStorage.removeItem("cached_threads");
-        localStorage.removeItem("active_thread_id");
-        localStorage.removeItem("active_thread_chats");
+        clearAllBuddyBotStorage();
         setIsAuthenticated(false);
         setCurrentUser(null);
         setGuestCount(0);
@@ -112,7 +113,7 @@ function ChatWindow() {
         setNewChat(false);
 
         abortControllerRef.current = new AbortController();
-        const token = localStorage.getItem("token");
+        const token = getStoredToken();
         const options = {
             method: "POST",
             signal: abortControllerRef.current.signal,
@@ -145,7 +146,7 @@ function ChatWindow() {
                     if (Array.isArray(threads)) {
                         const filtered = threads.map(t => ({ threadId: t.threadId, title: t.title }));
                         setAllThreads(filtered);
-                        localStorage.setItem("cached_threads", JSON.stringify(filtered));
+                        setCachedThreads(filtered);
                     }
                 })
                 .catch(() => {});
@@ -155,8 +156,8 @@ function ChatWindow() {
             if (!isAuthenticated && guestCount === 0) {
                 const nextCount = 1;
                 setGuestCount(nextCount);
-                localStorage.setItem("guest_msg_count", "1");
-                localStorage.setItem("guest_thread_id", currThreadId);
+                localStorage.setItem("buddybot_guest_msg_count", "1");
+                localStorage.setItem("buddybot_guest_thread_id", currThreadId);
 
                 // Prompt sign up after user reads the reply
                 setTimeout(() => {
@@ -384,9 +385,10 @@ function ChatWindow() {
                 onClose={() => setShowAuthModal(false)}
                 onAuthSuccess={(token, user) => {
                     setIsAuthenticated(true);
+                    setStoredToken(token);
                     if (user) {
                         setCurrentUser(user);
-                        localStorage.setItem("user", JSON.stringify(user));
+                        setStoredUser(user);
                     }
                     setGuestCount(0);
                     setShowAuthModal(false);

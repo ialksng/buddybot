@@ -4,6 +4,13 @@ import {MyContext} from "./MyContext.jsx";
 import {v1 as uuidv1} from "uuid";
 import buddyBotLogo from "./assets/buddy-bot.png";
 import { API_URL } from "./apiConfig.js";
+import {
+  getStoredToken,
+  setCachedThreads,
+  setActiveThreadId,
+  setActiveChats,
+  clearActiveChats,
+} from "./storage.js";
 
 function Sidebar() {
   const {
@@ -14,18 +21,18 @@ function Sidebar() {
     isAuthenticated,
     setShowAuthModal,
     isSidebarOpen, setIsSidebarOpen,
+    prevChats,
   } = useContext(MyContext);
 
   const getAuthHeaders = () => {
-    const token = localStorage.getItem("token");
+    const token = getStoredToken();
     return token ? { Authorization: `Bearer ${token}` } : {};
   };
 
   const getAllThreads = async () => {
-    const token = localStorage.getItem("token");
+    const token = getStoredToken();
     if (!token && !isAuthenticated) {
       setAllThreads([]);
-      localStorage.removeItem("cached_threads");
       return;
     }
     try {
@@ -33,10 +40,10 @@ function Sidebar() {
         headers: getAuthHeaders(),
       });
       const res = await response.json();
-      if (Array.isArray(res)) {
+      if (Array.isArray(res) && res.length > 0) {
         const filteredData = res.map(thread => ({threadId: thread.threadId, title: thread.title}));
         setAllThreads(filteredData);
-        localStorage.setItem("cached_threads", JSON.stringify(filteredData));
+        setCachedThreads(filteredData);
       }
     } catch(err) {
       console.log("Failed to fetch threads, keeping cached state:", err);
@@ -44,7 +51,7 @@ function Sidebar() {
   };
 
   useEffect(() => {
-    if (isAuthenticated || localStorage.getItem("token")) {
+    if (isAuthenticated || getStoredToken()) {
       getAllThreads();
     }
   }, [isAuthenticated]);
@@ -56,18 +63,18 @@ function Sidebar() {
     setReply(null);
     setCurrThreadId(newId);
     setPrevChats([]);
-    localStorage.setItem("active_thread_id", newId);
-    localStorage.removeItem("active_thread_chats");
+    setActiveThreadId(newId);
+    clearActiveChats();
     if (setIsSidebarOpen) setIsSidebarOpen(false);
   };
 
   const changeThread = async (newThreadId) => {
-    if (newThreadId === currThreadId && prevChats.length > 0) {
+    if (newThreadId === currThreadId && prevChats?.length > 0) {
       if (setIsSidebarOpen) setIsSidebarOpen(false);
       return;
     }
     setCurrThreadId(newThreadId);
-    localStorage.setItem("active_thread_id", newThreadId);
+    setActiveThreadId(newThreadId);
     if (setIsSidebarOpen) setIsSidebarOpen(false);
 
     try {
@@ -77,7 +84,7 @@ function Sidebar() {
       const res = await response.json();
       if (Array.isArray(res)) {
         setPrevChats(res);
-        localStorage.setItem("active_thread_chats", JSON.stringify(res));
+        setActiveChats(res);
         setNewChat(res.length === 0);
       }
       setReply(null);
@@ -96,7 +103,7 @@ function Sidebar() {
 
       setAllThreads(prev => {
         const updated = prev.filter(thread => thread.threadId !== threadId);
-        localStorage.setItem("cached_threads", JSON.stringify(updated));
+        setCachedThreads(updated);
         return updated;
       });
 
