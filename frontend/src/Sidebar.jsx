@@ -10,6 +10,8 @@ import {
   setActiveThreadId,
   setActiveChats,
   clearActiveChats,
+  getActiveChats,
+  getActiveThreadId,
 } from "./storage.js";
 
 function Sidebar() {
@@ -29,7 +31,7 @@ function Sidebar() {
     return token ? { Authorization: `Bearer ${token}` } : {};
   };
 
-  const getAllThreads = async () => {
+  const getAllThreads = async (autoSelectFirst = false) => {
     const token = getStoredToken();
     if (!token && !isAuthenticated) {
       setAllThreads([]);
@@ -44,6 +46,17 @@ function Sidebar() {
         const filteredData = res.map(thread => ({threadId: thread.threadId, title: thread.title}));
         setAllThreads(filteredData);
         setCachedThreads(filteredData);
+
+        if (autoSelectFirst) {
+          const activeId = getActiveThreadId();
+          const activeChats = getActiveChats();
+          const targetId = activeId && filteredData.some(t => t.threadId === activeId)
+            ? activeId
+            : filteredData[0].threadId;
+          if (!activeChats || activeChats.length === 0) {
+            changeThread(targetId);
+          }
+        }
       }
     } catch(err) {
       console.log("Failed to fetch threads, keeping cached state:", err);
@@ -52,7 +65,7 @@ function Sidebar() {
 
   useEffect(() => {
     if (isAuthenticated || getStoredToken()) {
-      getAllThreads();
+      getAllThreads(true);
     }
   }, [isAuthenticated]);
 

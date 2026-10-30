@@ -12,6 +12,8 @@ import {
     setStoredUser,
     clearAllBuddyBotStorage,
     setCachedThreads,
+    setActiveChats,
+    setActiveThreadId,
 } from "./storage.js";
 
 function ChatWindow() {
@@ -106,11 +108,23 @@ function ChatWindow() {
         }
 
         // Add user prompt to chat UI immediately and clear input
-        setPrevChats(prev => [...prev, { role: "user", content: userPrompt }]);
+        const updatedUserChats = [...prevChats, { role: "user", content: userPrompt }];
+        setPrevChats(updatedUserChats);
+        setActiveChats(updatedUserChats);
+        setActiveThreadId(currThreadId);
         setPrompt("");
         setLoading(true);
         setIsGenerating(true);
         setNewChat(false);
+
+        // Immediately update sidebar threads with this new/updated chat title
+        const chatTitle = userPrompt.substring(0, 50);
+        setAllThreads(prev => {
+            const filtered = prev.filter(t => t.threadId !== currThreadId);
+            const updated = [{ threadId: currThreadId, title: chatTitle }, ...filtered];
+            setCachedThreads(updated);
+            return updated;
+        });
 
         abortControllerRef.current = new AbortController();
         const token = getStoredToken();
@@ -133,7 +147,9 @@ function ChatWindow() {
             const res = await response.json();
             const assistantReply = res.reply || "Something went wrong. Please try again.";
 
-            setPrevChats(prev => [...prev, { role: "assistant", content: assistantReply }]);
+            const finalChats = [...updatedUserChats, { role: "assistant", content: assistantReply }];
+            setPrevChats(finalChats);
+            setActiveChats(finalChats);
             setReply(assistantReply);
 
             // If user is authenticated, refresh sidebar thread list so new chat appears immediately
@@ -143,7 +159,7 @@ function ChatWindow() {
                 })
                 .then(r => r.json())
                 .then(threads => {
-                    if (Array.isArray(threads)) {
+                    if (Array.isArray(threads) && threads.length > 0) {
                         const filtered = threads.map(t => ({ threadId: t.threadId, title: t.title }));
                         setAllThreads(filtered);
                         setCachedThreads(filtered);

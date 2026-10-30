@@ -207,6 +207,43 @@ function App() {
     }
   }, [prevChats]);
 
+  // Sync active thread messages and history on mount and when returning to the tab
+  useEffect(() => {
+    const syncActiveThread = () => {
+      const token = getStoredToken();
+      const activeId = getActiveThreadId();
+      if (activeId && token) {
+        fetch(`${API_URL}/api/thread/${activeId}`, {
+          headers: { Authorization: `Bearer ${token}` }
+        })
+        .then(r => r.json())
+        .then(messages => {
+          if (Array.isArray(messages) && messages.length > 0) {
+            setPrevChats(messages);
+            setActiveChats(messages);
+            setNewChat(false);
+          }
+        })
+        .catch(() => {});
+      }
+    };
+
+    syncActiveThread();
+
+    const handleVisibility = () => {
+      if (document.visibilityState === "visible") {
+        syncActiveThread();
+      }
+    };
+
+    window.addEventListener("focus", handleVisibility);
+    document.addEventListener("visibilitychange", handleVisibility);
+    return () => {
+      window.removeEventListener("focus", handleVisibility);
+      document.removeEventListener("visibilitychange", handleVisibility);
+    };
+  }, []);
+
   const providerValues = {
     prompt,
     setPrompt,

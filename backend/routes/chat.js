@@ -112,8 +112,11 @@ router.post(["/chat", "/"], async(req, res) => {
                 messages: [{role: "user", content: message}]
             })
         } else {
-            if (uid && !thread.userId) {
+            if (uid) {
                 thread.userId = uid;
+            }
+            if (!thread.title || thread.title === "New Chat") {
+                thread.title = message.substring(0, 50);
             }
             thread.messages.push({role: "user", content: message});
         }
@@ -133,20 +136,22 @@ router.post(["/chat", "/"], async(req, res) => {
 // Claim a guest thread after logging in or signing up
 router.post("/claim-thread", async (req, res) => {
     const { threadId } = req.body;
-    if (!threadId || !req.user) {
-        return res.status(400).json({ error: "Missing threadId or unauthorized" });
+    if (!req.user) {
+        return res.status(401).json({ error: "Missing unauthorized session" });
     }
     try {
         const uid = mongoose.Types.ObjectId.isValid(req.user.id)
             ? new mongoose.Types.ObjectId(req.user.id)
             : req.user.id;
 
-        const thread = await Thread.findOneAndUpdate(
-            { threadId },
-            { $set: { userId: uid } },
-            { new: true }
-        );
-        res.json({ success: true, thread });
+        if (threadId) {
+            await Thread.findOneAndUpdate(
+                { threadId },
+                { $set: { userId: uid } },
+                { new: true }
+            );
+        }
+        res.json({ success: true });
     } catch (err) {
         console.error("Failed to claim thread:", err);
         res.status(500).json({ error: "Failed to claim thread" });
