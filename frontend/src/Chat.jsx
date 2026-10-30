@@ -60,7 +60,12 @@ function CodeBlock({ language, rawCode, children }) {
     };
 
     return (
-        <div className="code-block-container">
+        <div
+            className="code-block-container"
+            spellCheck="false"
+            data-gramm="false"
+            data-enable-grammarly="false"
+        >
             <div className="code-block-header">
                 <span className="code-language">{language || "code"}</span>
                 <button
@@ -73,8 +78,18 @@ function CodeBlock({ language, rawCode, children }) {
                     <span>{copied ? "Copied" : "Copy"}</span>
                 </button>
             </div>
-            <pre className="code-block-pre">
-                <code className={`hljs ${language ? `language-${language}` : ""}`}>
+            <pre
+                className="code-block-pre"
+                spellCheck="false"
+                data-gramm="false"
+                data-enable-grammarly="false"
+            >
+                <code
+                    className={`hljs ${language ? `language-${language}` : ""}`}
+                    spellCheck="false"
+                    data-gramm="false"
+                    data-enable-grammarly="false"
+                >
                     {children}
                 </code>
             </pre>

@@ -278,12 +278,13 @@
 
 .code-block-pre {
     margin: 0;
-    padding: 1rem 1.15rem;
+    padding: 1.1rem 1.25rem;
     overflow-x: auto;
-    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-    font-size: 0.9rem;
-    line-height: 1.6;
+    font-family: "Cascadia Code", "Fira Code", "JetBrains Mono", SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    font-size: 0.92rem;
+    line-height: 1.65;
     background-color: #1a1b26 !important;
+    tab-size: 4;
 }
 
 .code-block-pre code {
@@ -294,7 +295,7 @@
     font-size: inherit;
 }
 
-/* Tokyo Night Syntax Highlighting explicit bright colors */
+/* Tokyo Night Syntax Highlighting - Vibrant, High-Contrast */
 .code-block-pre .hljs-keyword,
 .code-block-pre .hljs-selector-tag,
 .code-block-pre .hljs-built_in,
@@ -303,17 +304,43 @@
     font-weight: 600;
 }
 
+/* Meta: shebangs (#!/usr/bin/env python3), decorators, preprocessor directives */
+.code-block-pre .hljs-meta,
+.code-block-pre .hljs-meta-keyword,
+.code-block-pre .hljs-meta .hljs-keyword,
+.code-block-pre .hljs-meta-string {
+    color: #7dcfff !important;
+    font-weight: 500;
+}
+
 .code-block-pre .hljs-string,
-.code-block-pre .hljs-title,
-.code-block-pre .hljs-section,
+.code-block-pre .hljs-regexp,
 .code-block-pre .hljs-meta .hljs-string {
     color: #9ece6a !important;
 }
 
+/* Comments: high contrast soft slate with italics */
 .code-block-pre .hljs-comment,
 .code-block-pre .hljs-quote {
-    color: #7982a9 !important;
+    color: #94a3b8 !important;
     font-style: italic;
+}
+
+/* Functions & Methods */
+.code-block-pre .hljs-title,
+.code-block-pre .hljs-title.function_,
+.code-block-pre .hljs-title.hljs-function,
+.code-block-pre .hljs-function {
+    color: #7aa2f7 !important;
+    font-weight: 600;
+}
+
+/* Classes & Types */
+.code-block-pre .hljs-type,
+.code-block-pre .hljs-params,
+.code-block-pre .hljs-class,
+.code-block-pre .hljs-title.class_ {
+    color: #e0af68 !important;
 }
 
 .code-block-pre .hljs-variable,
@@ -331,17 +358,6 @@
 .code-block-pre .hljs-number,
 .code-block-pre .hljs-literal {
     color: #ff9e64 !important;
-}
-
-.code-block-pre .hljs-type,
-.code-block-pre .hljs-params,
-.code-block-pre .hljs-class {
-    color: #e0af68 !important;
-}
-
-.code-block-pre .hljs-function,
-.code-block-pre .hljs-title.hljs-function {
-    color: #7aa2f7 !important;
 }
 
 .code-block-pre .hljs-punctuation,
