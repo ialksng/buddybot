@@ -10,9 +10,49 @@ import Login from "./pages/Login.jsx";
 import Signup from "./pages/Signup.jsx";
 import Dashboard from "./pages/Dashboard.jsx";
 
+const parseJwt = (token) => {
+  try {
+    if (!token || typeof token !== "string") return null;
+    const parts = token.split(".");
+    if (parts.length < 2) return null;
+    const base64Url = parts[1];
+    const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
+    const jsonPayload = decodeURIComponent(
+      atob(base64)
+        .split("")
+        .map((c) => "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2))
+        .join("")
+    );
+    return JSON.parse(jsonPayload);
+  } catch {
+    return null;
+  }
+};
+
 function App() {
-  const [isAuthReady, setIsAuthReady] = useState(false);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [currentUser, setCurrentUser] = useState(() => {
+    try {
+      const saved = localStorage.getItem("user");
+      if (saved) return JSON.parse(saved);
+      const token = localStorage.getItem("token");
+      return parseJwt(token);
+    } catch {
+      return null;
+    }
+  });
+
+  const [isAuthenticated, setIsAuthenticated] = useState(() => {
+    const params = new URLSearchParams(window.location.search);
+    const tokenFromUrl = params.get("token");
+    const token = tokenFromUrl || localStorage.getItem("token");
+    if (!token || token === "null" || token === "undefined") return false;
+    const parsed = parseJwt(token);
+    if (!parsed) return false;
+    if (parsed.exp && parsed.exp * 1000 < Date.now()) return false;
+    return true;
+  });
+
+  const [isAuthReady, setIsAuthReady] = useState(true);
   const [guestCount, setGuestCount] = useState(() => {
     return parseInt(localStorage.getItem("guest_msg_count") || "0", 10);
   });
@@ -27,6 +67,12 @@ function App() {
       localStorage.setItem("token", tokenFromUrl);
       localStorage.removeItem("guest_msg_count");
       setGuestCount(0);
+      setIsAuthenticated(true);
+      const userObj = parseJwt(tokenFromUrl);
+      if (userObj) {
+        setCurrentUser(userObj);
+        localStorage.setItem("user", JSON.stringify(userObj));
+      }
       window.history.replaceState({}, "", window.location.pathname);
     }
 
@@ -35,9 +81,28 @@ function App() {
     // If no token, cleanly start as a guest user
     if (!token || token === "undefined" || token === "null" || token.trim() === "") {
       localStorage.removeItem("token");
+      localStorage.removeItem("user");
       setIsAuthenticated(false);
+      setCurrentUser(null);
       setIsAuthReady(true);
       return;
+    }
+
+    const parsed = parseJwt(token);
+    if (parsed && parsed.exp && parsed.exp * 1000 < Date.now()) {
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
+      setIsAuthenticated(false);
+      setCurrentUser(null);
+      setIsAuthReady(true);
+      return;
+    }
+
+    // Set local authenticated state immediately
+    setIsAuthenticated(true);
+    if (parsed && !currentUser) {
+      setCurrentUser(parsed);
+      localStorage.setItem("user", JSON.stringify(parsed));
     }
 
     // Verify token with backend
@@ -50,6 +115,10 @@ function App() {
       .then(data => {
         if (data.authenticated) {
           setIsAuthenticated(true);
+          if (data.user) {
+            setCurrentUser(data.user);
+            localStorage.setItem("user", JSON.stringify(data.user));
+          }
           localStorage.removeItem("guest_msg_count");
           setGuestCount(0);
 
@@ -67,15 +136,15 @@ function App() {
             localStorage.removeItem("guest_thread_id");
           }
         } else {
-          // Token expired or invalid: reset cleanly to guest!
+          // Token expired or invalid: reset cleanly to guest
           localStorage.removeItem("token");
+          localStorage.removeItem("user");
           setIsAuthenticated(false);
+          setCurrentUser(null);
         }
       })
-      .catch(() => {
-        // If server fails or offline, fall back to guest
-        localStorage.removeItem("token");
-        setIsAuthenticated(false);
+      .catch((err) => {
+        console.warn("Could not reach /api/auth/me, keeping local authenticated session:", err);
       })
       .finally(() => {
         setIsAuthReady(true);
@@ -117,6 +186,8 @@ function App() {
     setShowAuthModal,
     selectedModel,
     setSelectedModel,
+    currentUser,
+    setCurrentUser,
   };
 
   if (!isAuthReady) return null; // wait until we check token

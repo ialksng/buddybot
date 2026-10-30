@@ -4,11 +4,21 @@ import jwt from "jsonwebtoken";
 import sendEmail from "../utils/sendEmail.js";
 import crypto from "crypto";
 
+const JWT_SECRET = process.env.JWT_SECRET || "buddybot_jwt_secret";
+
 // Helper: Generate JWT
 const generateToken = (user) =>
-  jwt.sign({ id: user._id, email: user.email }, process.env.JWT_SECRET, {
-    expiresIn: "7d",
-  });
+  jwt.sign(
+    {
+      id: user._id,
+      email: user.email,
+      username: user.username || user.email?.split("@")[0] || "User",
+    },
+    JWT_SECRET,
+    {
+      expiresIn: "7d",
+    }
+  );
 
 // =============================
 // SIGNUP

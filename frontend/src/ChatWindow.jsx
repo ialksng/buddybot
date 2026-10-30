@@ -19,6 +19,7 @@ function ChatWindow() {
         guestCount, setGuestCount,
         showAuthModal, setShowAuthModal,
         selectedModel, setSelectedModel,
+        currentUser, setCurrentUser,
     } = useContext(MyContext);
 
     const [loading, setLoading] = useState(false);
@@ -62,7 +63,9 @@ function ChatWindow() {
 
     const handleLogout = () => {
         localStorage.removeItem("token");
+        localStorage.removeItem("user");
         setIsAuthenticated(false);
+        setCurrentUser(null);
         setGuestCount(0);
         localStorage.removeItem("guest_msg_count");
         localStorage.removeItem("guest_thread_id");
@@ -195,19 +198,42 @@ function ChatWindow() {
                 {/* User Auth actions or Profile Icon */}
                 {isAuthenticated ? (
                     <div className="userIconDiv" ref={profileMenuRef}>
-                        <span
-                            className="userIcon"
+                        <div
+                            className="userProfilePill"
                             onClick={() => setIsProfileOpen(!isProfileOpen)}
                             title="Profile & Settings"
                         >
-                            <i className="fa-solid fa-user"></i>
-                        </span>
+                            <span className="userAvatarCircle">
+                                {(currentUser?.username?.[0] || currentUser?.email?.[0] || "U").toUpperCase()}
+                            </span>
+                            <span className="userProfileName">
+                                {currentUser?.username || currentUser?.email?.split("@")[0] || "Account"}
+                            </span>
+                            <i className={`fa-solid fa-chevron-down profileChevron ${isProfileOpen ? "open" : ""}`}></i>
+                        </div>
                         {isProfileOpen && (
-                            <div className="dropDown">
-                                <div className="dropDownItem" style={{ opacity: 0.7, cursor: "default" }}>
-                                    <i className="fa-solid fa-shield-halved"></i> Signed in
+                            <div className="dropDown userProfileDropdown">
+                                <div className="userProfileHeader">
+                                    <div className="userProfileEmail" title={currentUser?.email}>
+                                        {currentUser?.email || "Signed In"}
+                                    </div>
+                                    <span className="userProfileTag">Free Plan</span>
                                 </div>
-                                <div className="dropDownItem" onClick={handleLogout} style={{ cursor: "pointer", color: "#fca5a5" }}>
+                                <div className="dropDownDivider"></div>
+                                <div
+                                    className="dropDownItem"
+                                    onClick={() => {
+                                        setNewChat(true);
+                                        setPrompt("");
+                                        setIsProfileOpen(false);
+                                    }}
+                                >
+                                    <i className="fa-solid fa-plus"></i> New chat
+                                </div>
+                                <div
+                                    className="dropDownItem logoutItem"
+                                    onClick={handleLogout}
+                                >
                                     <i className="fa-solid fa-arrow-right-from-bracket"></i> Log out
                                 </div>
                             </div>
@@ -275,9 +301,14 @@ function ChatWindow() {
             <AuthModal
                 isOpen={showAuthModal}
                 onClose={() => setShowAuthModal(false)}
-                onAuthSuccess={() => {
+                onAuthSuccess={(token, user) => {
                     setIsAuthenticated(true);
+                    if (user) {
+                        setCurrentUser(user);
+                        localStorage.setItem("user", JSON.stringify(user));
+                    }
                     setGuestCount(0);
+                    setShowAuthModal(false);
                 }}
             />
         </div>

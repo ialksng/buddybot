@@ -39,27 +39,84 @@ button:hover {
 
 .history {
     flex: 1;
-    margin: 10px;
-    padding: 10px;
-    height: 100%;
+    margin: 0.5rem 0.6rem;
+    padding: 0;
     overflow-y: auto;
-    scrollbar-color: #4a6b8a #91ADC8;
+    scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
     scrollbar-width: thin;
 }
 
 .history li {
     list-style-type: none;
     cursor: pointer;
-    padding: 2px 5px;
-    margin-bottom: 0.3rem;
-    font-size: 14px;
-    border: solid 10px transparent;
+    padding: 0.6rem 0.8rem;
+    margin-bottom: 0.35rem;
+    font-size: 0.86rem;
+    color: rgba(255, 255, 255, 0.9);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
     position: relative;
+    transition: all 0.15s ease;
 }
 
 .history li:hover {
-    background-color: rgba(180, 180, 180, 0.15);
-    border-radius: 50px;
+    background-color: rgba(255, 255, 255, 0.15);
+    color: #ffffff;
+}
+
+.history li.highlighted {
+    background-color: rgba(255, 255, 255, 0.24);
+    font-weight: 600;
+    color: #ffffff;
+}
+
+.thread-icon {
+    font-size: 0.85rem;
+    opacity: 0.75;
+    flex-shrink: 0;
+}
+
+.thread-title {
+    flex: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    text-align: left;
+}
+
+.history li .fa-trash {
+    opacity: 0;
+    font-size: 0.8rem;
+    transition: opacity 0.15s ease;
+    padding: 4px;
+    position: static;
+}
+
+.history li:hover .fa-trash {
+    opacity: 0.65;
+}
+
+.history li .fa-trash:hover {
+    opacity: 1;
+    color: #f87171 !important;
+}
+
+.empty-history-notice {
+    padding: 2.5rem 1rem;
+    text-align: center;
+    color: rgba(255, 255, 255, 0.65);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.82rem;
+}
+
+.empty-history-notice i {
+    font-size: 1.6rem;
+    opacity: 0.5;
 }
 
 .sign {

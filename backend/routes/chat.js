@@ -28,11 +28,14 @@ router.post("/test", async(req, res) => {
 // Get all threads
 router.get(["/thread", "/chat/thread"], async(req, res) => {
     try {
-        if (!req.user) {
+        if (!req.user?.id) {
             return res.json([]);
         }
         const threads = await Thread.find({
-            $or: [{ userId: req.user.id }, { userId: { $exists: false } }]
+            $or: [
+                { userId: req.user.id },
+                { userId: String(req.user.id) }
+            ]
         }).sort({updatedAt: -1});
         res.json(threads);
     } catch(err) {

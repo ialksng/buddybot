@@ -102,22 +102,32 @@ function Sidebar() {
       {/* history or guest prompt */}
       {isAuthenticated ? (
         <ul className="history">
-          {allThreads?.map((thread, idx) => (
-            <li
-              key={idx}
-              onClick={() => changeThread(thread.threadId)}
-              className={thread.threadId === currThreadId ? "highlighted" : " "}
-            >
-              {thread.title}
-              <i
-                className="fa-solid fa-trash"
-                onClick={(e) => {
-                  e.stopPropagation(); // stop event bubbling
-                  deleteThread(thread.threadId);
-                }}
-              ></i>
-            </li>
-          ))}
+          {allThreads?.length > 0 ? (
+            allThreads.map((thread, idx) => (
+              <li
+                key={idx}
+                onClick={() => changeThread(thread.threadId)}
+                className={thread.threadId === currThreadId ? "highlighted" : ""}
+                title={thread.title}
+              >
+                <i className="fa-regular fa-message thread-icon"></i>
+                <span className="thread-title">{thread.title}</span>
+                <i
+                  className="fa-solid fa-trash"
+                  title="Delete chat"
+                  onClick={(e) => {
+                    e.stopPropagation(); // stop event bubbling
+                    deleteThread(thread.threadId);
+                  }}
+                ></i>
+              </li>
+            ))
+          ) : (
+            <div className="empty-history-notice">
+              <i className="fa-regular fa-comments"></i>
+              <span>No chat history yet</span>
+            </div>
+          )}
         </ul>
       ) : (
         <div className="sidebar-guest-box">

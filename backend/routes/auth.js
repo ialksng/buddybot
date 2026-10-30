@@ -5,6 +5,8 @@ import { signup, login, forgotPassword } from "../controllers/authController.js"
 
 const router = express.Router();
 
+const JWT_SECRET = process.env.JWT_SECRET || "buddybot_jwt_secret";
+
 // ----------------------
 // 🧩 Normal Auth Routes
 // ----------------------
@@ -19,7 +21,7 @@ router.get("/me", (req, res) => {
     return res.status(401).json({ authenticated: false });
   }
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || "buddybot_jwt_secret");
+    const decoded = jwt.verify(token, JWT_SECRET);
     return res.json({ authenticated: true, user: decoded });
   } catch (err) {
     return res.status(401).json({ authenticated: false });
@@ -45,19 +47,23 @@ router.get("/google/callback", (req, res, next) => {
   const frontendURL =
     process.env.CLIENT_URL ||
     (process.env.NODE_ENV === "production"
-      ? "https://ialksng.me/work/projects/buddybot/app"
-      : "http://localhost:5173/work/projects/buddybot/app");
-  const failureURL = `${frontendURL}/login`;
+      ? "https://ialksng.me/work/projects/buddybot/app/"
+      : "http://localhost:5173/work/projects/buddybot/app/");
+  const failureURL = `${frontendURL}login`;
 
   if (!process.env.GOOGLE_CLIENT_ID || !process.env.GOOGLE_CLIENT_SECRET) {
     return res.redirect(`${failureURL}?error=google_not_configured`);
   }
   passport.authenticate("google", { failureRedirect: failureURL, session: false })(req, res, () => {
     try {
-      // Generate JWT
+      // Generate JWT with user info
       const token = jwt.sign(
-        { id: req.user._id, email: req.user.email },
-        process.env.JWT_SECRET || "buddybot_jwt_secret",
+        {
+          id: req.user._id,
+          email: req.user.email,
+          username: req.user.username || req.user.email?.split("@")[0] || "User"
+        },
+        JWT_SECRET,
         { expiresIn: "7d" }
       );
 
