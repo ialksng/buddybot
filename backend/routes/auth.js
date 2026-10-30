@@ -42,10 +42,17 @@ router.get("/google", (req, res, next) => {
 
 // Step 2: Handle Google callback
 router.get("/google/callback", (req, res, next) => {
+  const frontendURL =
+    process.env.CLIENT_URL ||
+    (process.env.NODE_ENV === "production"
+      ? "https://ialksng.me/work/projects/buddybot/app"
+      : "http://localhost:5173/work/projects/buddybot/app");
+  const failureURL = `${frontendURL}/login`;
+
   if (!process.env.GOOGLE_CLIENT_ID || !process.env.GOOGLE_CLIENT_SECRET) {
-    return res.redirect("/login?error=google_not_configured");
+    return res.redirect(`${failureURL}?error=google_not_configured`);
   }
-  passport.authenticate("google", { failureRedirect: "/login", session: false })(req, res, () => {
+  passport.authenticate("google", { failureRedirect: failureURL, session: false })(req, res, () => {
     try {
       // Generate JWT
       const token = jwt.sign(
@@ -54,23 +61,11 @@ router.get("/google/callback", (req, res, next) => {
         { expiresIn: "7d" }
       );
 
-      // Dynamically choose frontend URL
-      const frontendURL =
-        process.env.CLIENT_URL ||
-        (process.env.NODE_ENV === "production"
-          ? "https://ialksng.me/work/projects/buddybot/app"
-          : "http://localhost:5173/work/projects/buddybot/app");
-
       // Redirect to frontend chat page with token
-      res.redirect(`${frontendURL}/chat?token=${token}`);
+      res.redirect(`${frontendURL}?token=${token}`);
     } catch (err) {
       console.error("❌ Google OAuth callback error:", err);
-      const frontendURL =
-        process.env.CLIENT_URL ||
-        (process.env.NODE_ENV === "production"
-          ? "https://ialksng.me/work/projects/buddybot/app"
-          : "http://localhost:5173/work/projects/buddybot/app");
-      res.redirect(`${frontendURL}/login?error=google`);
+      res.redirect(`${failureURL}?error=google`);
     }
   });
 });

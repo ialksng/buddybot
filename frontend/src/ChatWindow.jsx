@@ -4,6 +4,7 @@ import AuthModal from "./AuthModal.jsx";
 import { MyContext } from "./MyContext.jsx";
 import { useContext, useState, useEffect } from "react";
 import { ScaleLoader } from "react-spinners";
+import { API_URL } from "./apiConfig.js";
 
 function ChatWindow() {
     const {
@@ -48,7 +49,6 @@ function ChatWindow() {
         setLoading(true);
         setNewChat(false);
         console.log("message", prompt, "threadId", currThreadId);
-        const API_URL = import.meta.env.VITE_API_URL || "";
         const token = localStorage.getItem("token");
         const options = {
             method: "POST",

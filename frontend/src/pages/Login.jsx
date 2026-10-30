@@ -2,15 +2,13 @@ import "./Auth.css";
 import axios from "axios";
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
+import { API_URL } from "../apiConfig.js";
 
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const navigate = useNavigate();
-
-  // Use environment variable for backend URL, default to relative for Vercel/same-domain
-  const API_URL = import.meta.env.VITE_API_URL || "";
 
   const handleLogin = async (e) => {
     e.preventDefault();

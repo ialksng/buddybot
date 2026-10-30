@@ -5,6 +5,7 @@ import { MyContext } from "./MyContext.jsx";
 import { useState, useEffect } from "react";
 import { v1 as uuidv1 } from "uuid";
 import { BrowserRouter, Routes, Route, Navigate, useNavigate } from "react-router-dom";
+import { API_URL, BASE_PATH } from "./apiConfig.js";
 import Login from "./pages/Login.jsx";
 import Signup from "./pages/Signup.jsx";
 import Dashboard from "./pages/Dashboard.jsx";
@@ -40,7 +41,6 @@ function App() {
     }
 
     // Verify token with backend
-    const API_URL = import.meta.env.VITE_API_URL || "";
     fetch(`${API_URL}/api/auth/me`, {
       headers: {
         Authorization: `Bearer ${token}`
@@ -112,7 +112,7 @@ function App() {
 
   if (!isAuthReady) return null; // wait until we check token
 
-  const baseUrl = (import.meta.env.BASE_URL || "/work/projects/buddybot/app").replace(/\/$/, "");
+  const baseUrl = BASE_PATH;
 
   const chatApp = (
     <div className="app">

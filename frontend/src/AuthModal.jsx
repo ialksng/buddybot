@@ -2,6 +2,7 @@ import "./AuthModal.css";
 import { useState } from "react";
 import axios from "axios";
 import buddyBotLogo from "./assets/buddy-bot.png";
+import { API_URL } from "./apiConfig.js";
 
 export default function AuthModal({ isOpen, onClose, onAuthSuccess }) {
   if (!isOpen) return null;
@@ -12,8 +13,6 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }) {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-
-  const API_URL = import.meta.env.VITE_API_URL || "";
 
   const handleSubmit = async (e) => {
     e.preventDefault();

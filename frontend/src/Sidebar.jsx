@@ -3,6 +3,7 @@ import { useContext, useEffect } from "react";
 import {MyContext} from "./MyContext.jsx";
 import {v1 as uuidv1} from "uuid";
 import buddyBotLogo from "./assets/buddy-bot.png";
+import { API_URL } from "./apiConfig.js";
 
 function Sidebar() {
   const {
@@ -13,7 +14,6 @@ function Sidebar() {
     isAuthenticated,
     setShowAuthModal
   } = useContext(MyContext);
-  const API_URL = import.meta.env.VITE_API_URL || "";
 
   const getAuthHeaders = () => {
     const token = localStorage.getItem("token");
