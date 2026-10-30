@@ -1,7 +1,7 @@
 import "./Auth.css";
 import axios from "axios";
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 
 export default function Signup() {
   const [username, setUsername] = useState("");
@@ -10,8 +10,8 @@ export default function Signup() {
   const [error, setError] = useState("");
   const navigate = useNavigate();
 
-  // Use environment variable for backend API
-  const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
+  // Use environment variable for backend API, default to relative for Vercel/same-domain
+  const API_URL = import.meta.env.VITE_API_URL || "";
 
   const handleSignup = async (e) => {
     e.preventDefault();
@@ -35,10 +35,10 @@ export default function Signup() {
   return (
     <div className="auth-container">
       <nav className="auth-navbar">
-        <div className="dashboard-logo">BuddyBOT</div>
+        <Link to="/" className="dashboard-logo" style={{ textDecoration: "none", color: "inherit" }}>BuddyBOT</Link>
         <div className="nav-actions">
-          <a href="/login" className="nav-btn">Login</a>
-          <a href="/signup" className="nav-btn signup">Sign Up</a>
+          <Link to="/login" className="nav-btn">Login</Link>
+          <Link to="/signup" className="nav-btn signup">Sign Up</Link>
         </div>
       </nav>
 
@@ -83,7 +83,7 @@ export default function Signup() {
         </button>
 
         <p className="auth-footer">
-          Already have an account? <a href="/login">Login</a>
+          Already have an account? <Link to="/login">Login</Link>
         </p>
       </div>
     </div>

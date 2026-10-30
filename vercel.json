@@ -1,0 +1,66 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": "vite",
+  "buildCommand": "npm run build",
+  "outputDirectory": "frontend/dist",
+  "functions": {
+    "api/*.js": {
+      "maxDuration": 60
+    }
+  },
+  "redirects": [
+    {
+      "source": "/",
+      "destination": "/work/projects/buddybot/app/",
+      "permanent": false
+    },
+    {
+      "source": "/work/projects/buddybot",
+      "destination": "/work/projects/buddybot/app/",
+      "permanent": false
+    },
+    {
+      "source": "/work/projects/buddybot/",
+      "destination": "/work/projects/buddybot/app/",
+      "permanent": false
+    }
+  ],
+  "rewrites": [
+    {
+      "source": "/work/projects/buddybot/app/api/:path*",
+      "destination": "/api"
+    },
+    {
+      "source": "/work/projects/buddybot/api/:path*",
+      "destination": "/api"
+    },
+    {
+      "source": "/api/:path*",
+      "destination": "/api"
+    },
+    {
+      "source": "/api",
+      "destination": "/api"
+    },
+    {
+      "source": "/work/projects/buddybot/app/assets/:path*",
+      "destination": "/assets/:path*"
+    },
+    {
+      "source": "/work/projects/buddybot/app/",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/work/projects/buddybot/app",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/work/projects/buddybot/app/:path*",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ]
+}

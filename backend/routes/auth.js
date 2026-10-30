@@ -17,41 +17,48 @@ router.post("/forgot-password", forgotPassword);
 // ----------------------
 
 // Step 1: Redirect to Google login
-router.get(
-  "/google",
-  passport.authenticate("google", { scope: ["profile", "email"] })
-);
+router.get("/google", (req, res, next) => {
+  if (!process.env.GOOGLE_CLIENT_ID || !process.env.GOOGLE_CLIENT_SECRET) {
+    return res.status(503).json({
+      error: "Google OAuth is not configured on this server.",
+    });
+  }
+  passport.authenticate("google", { scope: ["profile", "email"] })(req, res, next);
+});
 
 // Step 2: Handle Google callback
-router.get(
-  "/google/callback",
-  passport.authenticate("google", { failureRedirect: "/login", session: false }),
-  (req, res) => {
+router.get("/google/callback", (req, res, next) => {
+  if (!process.env.GOOGLE_CLIENT_ID || !process.env.GOOGLE_CLIENT_SECRET) {
+    return res.redirect("/login?error=google_not_configured");
+  }
+  passport.authenticate("google", { failureRedirect: "/login", session: false })(req, res, () => {
     try {
       // Generate JWT
       const token = jwt.sign(
         { id: req.user._id, email: req.user.email },
-        process.env.JWT_SECRET,
+        process.env.JWT_SECRET || "buddybot_jwt_secret",
         { expiresIn: "7d" }
       );
 
       // Dynamically choose frontend URL
       const frontendURL =
-        process.env.NODE_ENV === "production"
-          ? "https://buddy-bot-p4ko.onrender.com"
-          : "http://localhost:5173";
+        process.env.CLIENT_URL ||
+        (process.env.NODE_ENV === "production"
+          ? "https://ialksng.me/work/projects/buddybot/app"
+          : "http://localhost:5173/work/projects/buddybot/app");
 
       // Redirect to frontend chat page with token
       res.redirect(`${frontendURL}/chat?token=${token}`);
     } catch (err) {
       console.error("❌ Google OAuth callback error:", err);
       const frontendURL =
-        process.env.NODE_ENV === "production"
-          ? "https://buddy-bot-p4ko.onrender.com"
-          : "http://localhost:5173";
+        process.env.CLIENT_URL ||
+        (process.env.NODE_ENV === "production"
+          ? "https://ialksng.me/work/projects/buddybot/app"
+          : "http://localhost:5173/work/projects/buddybot/app");
       res.redirect(`${frontendURL}/login?error=google`);
     }
-  }
-);
+  });
+});
 
 export default router;

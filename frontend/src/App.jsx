@@ -23,7 +23,7 @@ function App() {
     if (token) {
       localStorage.setItem("token", token);
       setIsAuthenticated(true);
-      window.history.replaceState({}, "", "/chat"); // clean URL
+      window.history.replaceState({}, "", window.location.pathname); // clean URL without stripping subpath
     }
 
     setIsAuthReady(true);
@@ -53,9 +53,12 @@ function App() {
 
   if (!isAuthReady) return null; // wait until we check token
 
+  const baseUrl = (import.meta.env.BASE_URL || "/work/projects/buddybot/app").replace(/\/$/, "");
+
   return (
-    <BrowserRouter>
+    <BrowserRouter basename={baseUrl}>
       <Routes>
+        <Route path="/" element={<Dashboard isAuthenticated={isAuthenticated} />} />
         <Route path="/dashboard" element={<Dashboard isAuthenticated={isAuthenticated} />} />
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
@@ -71,13 +74,13 @@ function App() {
                 </MyContext.Provider>
               </div>
             ) : (
-              <Navigate to="/login" />
+              <Navigate to="/login" replace />
             )
           }
         />
 
         {/* default redirect */}
-        <Route path="*" element={<Navigate to="/dashboard" />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>
   );

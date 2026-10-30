@@ -1,14 +1,21 @@
 import "./Dashboard.css";
+import { Link } from "react-router-dom";
 
-export default function Dashboard() {
+export default function Dashboard({ isAuthenticated }) {
   return (
     <div className="dashboard-container">
       {/* Navbar */}
       <nav className="dashboard-navbar">
-        <div className="dashboard-logo">BuddyBOT</div>
+        <Link to="/" className="dashboard-logo" style={{ textDecoration: "none", color: "inherit" }}>BuddyBOT</Link>
         <div className="nav-actions">
-          <a href="/login" className="nav-btn">Login</a>
-          <a href="/signup" className="nav-btn signup">Sign Up</a>
+          {isAuthenticated ? (
+            <Link to="/chat" className="nav-btn signup">Go to Chat</Link>
+          ) : (
+            <>
+              <Link to="/login" className="nav-btn">Login</Link>
+              <Link to="/signup" className="nav-btn signup">Sign Up</Link>
+            </>
+          )}
         </div>
       </nav>
 
@@ -19,7 +26,9 @@ export default function Dashboard() {
           Your intelligent chatbot companion that helps you with conversations, answers,
           and insights — built with the power of AI and the MERN stack.
         </p>
-        <a href="/signup" className="get-started-btn">Get Started</a>
+        <Link to={isAuthenticated ? "/chat" : "/signup"} className="get-started-btn">
+          {isAuthenticated ? "Open Chat" : "Get Started"}
+        </Link>
       </div>
     </div>
   );

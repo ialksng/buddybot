@@ -2,20 +2,27 @@ import "./Sidebar.css";
 import { useContext, useEffect } from "react";
 import {MyContext} from "./MyContext.jsx";
 import {v1 as uuidv1} from "uuid";
+import buddyBotLogo from "./assets/buddy-bot.png";
 
 function Sidebar() {
   const {allThreads, setAllThreads, currThreadId, setNewChat, setPrompt, setReply, setCurrThreadId, setPrevChats} = useContext(MyContext);
+  const API_URL = import.meta.env.VITE_API_URL || "";
+
+  const getAuthHeaders = () => {
+    const token = localStorage.getItem("token");
+    return token ? { Authorization: `Bearer ${token}` } : {};
+  };
 
   const getAllThreads = async () => {
-
     try {
-      const response = await fetch("http://localhost:3000/api/thread");
+      const response = await fetch(`${API_URL}/api/thread`, {
+        headers: getAuthHeaders(),
+      });
       const res = await response.json();
-      const filteredData = res.map(thread => ({threadId: thread.threadId, title: thread.title}));
-      // console.log(filteredData);
-      setAllThreads(filteredData);
-      // threadId, title
-
+      if (Array.isArray(res)) {
+        const filteredData = res.map(thread => ({threadId: thread.threadId, title: thread.title}));
+        setAllThreads(filteredData);
+      }
     } catch(err) {
       console.log(err);
     }
@@ -37,10 +44,12 @@ function Sidebar() {
     setCurrThreadId(newThreadId);
 
     try {
-      const response = await fetch(`http://localhost:3000/api/thread/${newThreadId}`);
+      const response = await fetch(`${API_URL}/api/thread/${newThreadId}`, {
+        headers: getAuthHeaders(),
+      });
       const res = await response.json();
       console.log(res);
-      setPrevChats(res);
+      setPrevChats(Array.isArray(res) ? res : []);
       setNewChat(false);
       setReply(null);
     } catch(err) {
@@ -50,7 +59,10 @@ function Sidebar() {
 
   const deleteThread = async (threadId) => {
     try {
-      const response = await fetch(`http://localhost:3000/api/thread/${threadId}`, {method: "DELETE"});      
+      const response = await fetch(`${API_URL}/api/thread/${threadId}`, {
+        method: "DELETE",
+        headers: getAuthHeaders(),
+      });      
       const res = await response.json();
       console.log(res);
 
@@ -70,7 +82,7 @@ function Sidebar() {
     <section className="sidebar">
       {/* new chat button */}
       <button onClick={createNewChat}>
-        <img src="src/assets/buddy-bot.png" alt="buddy-bot" className="logo"></img>
+        <img src={buddyBotLogo} alt="buddy-bot" className="logo"></img>
         <span><i className="fa-solid fa-pen-to-square"></i></span>
       </button>
 

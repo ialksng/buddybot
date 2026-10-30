@@ -26,7 +26,10 @@ app.use(express.json());
 app.use(cookieParser());
 app.use(
   cors({
-    origin: process.env.CLIENT_URL || "http://localhost:5173",
+    origin: (origin, callback) => {
+      // Allow any origin or requests without origin (like mobile/curl/server-to-server)
+      callback(null, true);
+    },
     credentials: true,
   })
 );
@@ -34,7 +37,7 @@ app.use(
 // Session and Passport
 app.use(
   session({
-    secret: process.env.SESSION_SECRET || "secretkey",
+    secret: process.env.SESSION_SECRET || "buddybot_secret_session_key",
     resave: false,
     saveUninitialized: false,
   })
@@ -42,49 +45,82 @@ app.use(
 app.use(passport.initialize());
 app.use(passport.session());
 
-// JWT verification middleware
-const verifyToken = (req, res, next) => {
-  const token = req.headers.authorization?.split(" ")[1];
-  if (!token) return res.status(401).json({ message: "Unauthorized" });
-
-  try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    req.user = decoded;
-    next();
-  } catch (err) {
-    res.status(403).json({ message: "Invalid or expired token" });
+// Connect to MongoDB (optimized & cached for serverless + standalone)
+export const connectDB = async () => {
+  if (mongoose.connection.readyState >= 1) {
+    return;
   }
-};
-
-// Routes
-app.use("/api/auth", authRoutes);
-app.use("/api/chat", verifyToken, chatRoutes);
-
-// Connect to MongoDB
-const connectDB = async () => {
+  if (!process.env.MONGODB_URI) {
+    throw new Error("MONGODB_URI environment variable is not defined");
+  }
   try {
     await mongoose.connect(process.env.MONGODB_URI);
     console.log("✅ Connected with Database");
   } catch (err) {
-    console.error("❌ Failed to connect with the Database:", err.message);
-    process.exit(1);
+    console.error("❌ Failed to connect with Database:", err.message);
+    throw err;
   }
 };
 
-// Serve frontend in production
-if (process.env.NODE_ENV === "production") {
+// Ensure database is connected before handling API requests
+app.use(async (req, res, next) => {
+  try {
+    await connectDB();
+    next();
+  } catch (err) {
+    console.error("Database connection middleware error:", err.message);
+    res.status(500).json({ error: "Database connection failed", details: err.message });
+  }
+});
+
+// JWT verification middleware (attaches user if valid, non-blocking if token omitted)
+const verifyToken = (req, res, next) => {
+  const token = req.headers.authorization?.split(" ")[1];
+  if (!token) {
+    req.user = null;
+    return next();
+  }
+
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || "buddybot_jwt_secret");
+    req.user = decoded;
+    next();
+  } catch (err) {
+    req.user = null;
+    next();
+  }
+};
+
+// Routes (supports both direct API routes and subpath routes)
+// Auth routes
+app.use(["/work/projects/buddybot/app/api/auth", "/api/auth", "/auth"], authRoutes);
+
+// Chat & Thread routes
+app.use(["/work/projects/buddybot/app/api", "/api"], verifyToken, chatRoutes);
+app.use("/api/chat", verifyToken, chatRoutes);
+
+// Serve frontend when running as standalone Node server (Render / Docker / local)
+if (!process.env.VERCEL && process.env.NODE_ENV === "production") {
   const frontendPath = path.join(__dirname, "../frontend/dist");
   app.use(express.static(frontendPath));
 
-  // ✅ Universal fallback — Express 5-safe
+  // Universal fallback for SPA
   app.all(/(.*)/, (req, res) => {
     res.sendFile(path.join(frontendPath, "index.html"));
   });
 }
 
-// Start server
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, async () => {
-  await connectDB();
-  console.log(`🚀 Server running on port ${PORT}`);
-});
+// Start server when run directly (not inside Vercel serverless functions)
+if (!process.env.VERCEL && process.env.NODE_ENV !== "test") {
+  const PORT = process.env.PORT || 3000;
+  app.listen(PORT, async () => {
+    try {
+      await connectDB();
+    } catch (e) {
+      // logged inside connectDB
+    }
+    console.log(`🚀 Server running on port ${PORT}`);
+  });
+}
+
+export default app;

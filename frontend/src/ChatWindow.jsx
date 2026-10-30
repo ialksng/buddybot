@@ -9,14 +9,23 @@ function ChatWindow() {
     const [loading, setLoading] = useState(false);
     const [isOpen, setIsOpen] = useState(false);
 
+    const handleLogout = () => {
+        localStorage.removeItem("token");
+        const baseUrl = (import.meta.env.BASE_URL || "/work/projects/buddybot/app").replace(/\/$/, "");
+        window.location.href = `${baseUrl}/login`;
+    };
+
     const getReply = async () => {
         setLoading(true);
         setNewChat(false);
         console.log("message", prompt, "threadId", currThreadId);
+        const API_URL = import.meta.env.VITE_API_URL || "";
+        const token = localStorage.getItem("token");
         const options = {
             method: "POST",
             headers: {
-                "Content-Type": "application/json"
+                "Content-Type": "application/json",
+                ...(token ? { "Authorization": `Bearer ${token}` } : {})
             },
             body: JSON.stringify({
                 message: prompt,
@@ -25,7 +34,7 @@ function ChatWindow() {
         };
 
         try{
-            const response = await fetch("http://localhost:3000/api/chat", options);
+            const response = await fetch(`${API_URL}/api/chat`, options);
             const res = await response.json();
             console.log(res);
             setReply(res.reply);
@@ -68,8 +77,8 @@ function ChatWindow() {
             {
                 isOpen && 
                 <div className="dropDown">
-                    <div className="dropDownItem"><i class="fa-solid fa-gear"></i> Settings</div>
-                    <div className="dropDownItem"><i class="fa-solid fa-arrow-right-from-bracket"></i> Log out</div>
+                    <div className="dropDownItem"><i className="fa-solid fa-gear"></i> Settings</div>
+                    <div className="dropDownItem" onClick={handleLogout} style={{ cursor: "pointer" }}><i className="fa-solid fa-arrow-right-from-bracket"></i> Log out</div>
                 </div>
             }
             <Chat></Chat>
