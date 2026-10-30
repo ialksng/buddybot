@@ -1,4 +1,5 @@
 import express from "express";
+import mongoose from "mongoose";
 import Thread from "../models/Thread.js";
 import getGroqAPIResponse, { GROQ_MODELS } from "../utils/groq.js";
 

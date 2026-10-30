@@ -76,14 +76,18 @@ app.use(async (req, res, next) => {
 // JWT verification middleware (attaches user if valid, non-blocking if token omitted)
 const verifyToken = (req, res, next) => {
   const token = req.headers.authorization?.split(" ")[1];
-  if (!token) {
+  if (!token || token === "null" || token === "undefined") {
     req.user = null;
     return next();
   }
 
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || "buddybot_jwt_secret");
-    req.user = decoded;
+    const secret = process.env.JWT_SECRET || "buddybot_jwt_secret";
+    const decoded = jwt.verify(token, secret);
+    req.user = {
+      ...decoded,
+      id: decoded.id || decoded._id,
+    };
     next();
   } catch (err) {
     req.user = null;
