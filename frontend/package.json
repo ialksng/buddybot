@@ -11,13 +11,16 @@
   },
   "dependencies": {
     "axios": "^1.13.1",
+    "katex": "^0.19.1",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
     "react-markdown": "^10.1.0",
     "react-router-dom": "^7.9.5",
     "react-spinners": "^0.17.0",
     "rehype-highlight": "^7.0.2",
+    "rehype-katex": "^7.0.1",
     "remark-gfm": "^4.0.1",
+    "remark-math": "^6.0.0",
     "uuid": "^13.0.0"
   },
   "devDependencies": {

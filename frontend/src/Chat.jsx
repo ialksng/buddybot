@@ -3,8 +3,11 @@ import { useContext, useState, useEffect, useRef } from "react";
 import { MyContext } from "./MyContext";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import remarkMath from "remark-math";
+import rehypeKatex from "rehype-katex";
 import rehypeHighlight from "rehype-highlight";
 import "highlight.js/styles/tokyo-night-dark.css";
+import "katex/dist/katex.min.css";
 import buddyBotLogo from "./assets/buddy-bot.png";
 
 function extractText(node) {
@@ -14,6 +17,30 @@ function extractText(node) {
     if (Array.isArray(node)) return node.map(extractText).join("");
     if (node.props && node.props.children) return extractText(node.props.children);
     return "";
+}
+
+export function formatMathFormulas(content) {
+    if (!content || typeof content !== "string") return "";
+    let text = content;
+
+    // 1. Convert standard LaTeX display math \[ ... \] to $$ ... $$
+    text = text.replace(/\\\[([\s\S]*?)\\\]/g, (_, math) => `\n$$\n${math.trim()}\n$$\n`);
+
+    // 2. Convert standard LaTeX inline math \( ... \) to $ ... $
+    text = text.replace(/\\\(([\s\S]*?)\\\)/g, (_, math) => `$${math.trim()}$`);
+
+    // 3. Convert standalone bracketed LaTeX expressions like [ \boxed{...} ] or [ \frac{...} ]
+    // that are NOT markdown links (i.e. not followed by '(' or ':')
+    text = text.replace(/(^|\n|\s)\[\s*(\\boxed[\s\S]*?|\\frac[\s\S]*?|\\[a-zA-Z]{2,}[\s\S]*?)\s*\](?!\s*[\(:])/g,
+        (match, prefix, math) => `${prefix}\n$$\n${math.trim()}\n$$\n`
+    );
+
+    // 4. Wrap un-delimited math expressions like `\approx (6.67430 \times 10^{-11}...)` in $...$
+    text = text.replace(/(^|[^$\\\w])(\\approx\s+[^\n$|]+)/g, (match, prefix, expr) => {
+        return `${prefix}$${expr.trim()}$`;
+    });
+
+    return text;
 }
 
 function CodeBlock({ language, rawCode, children }) {
@@ -115,19 +142,21 @@ function Chat() {
                                     </div>
                                     <div className="assistant-content markdown-body">
                                         <ReactMarkdown
-                                            remarkPlugins={[remarkGfm]}
-                                            rehypePlugins={[rehypeHighlight]}
+                                            remarkPlugins={[remarkGfm, remarkMath]}
+                                            rehypePlugins={[[rehypeKatex, { throwOnError: false, strict: false }], rehypeHighlight]}
                                             components={{
                                                 pre({ children }) {
                                                     return <>{children}</>;
                                                 },
                                                 code({ node, inline, className, children, ...props }) {
                                                     const match = /language-(\w+)/.exec(className || "");
-                                                    if (!inline && (match || className)) {
+                                                    const textContent = extractText(children);
+                                                    const isMultiline = String(textContent).includes("\n");
+                                                    if (!inline && (match || className || isMultiline)) {
                                                         return (
                                                             <CodeBlock
                                                                 language={match ? match[1] : ""}
-                                                                rawCode={extractText(children)}
+                                                                rawCode={textContent}
                                                                 {...props}
                                                             >
                                                                 {children}
@@ -142,7 +171,7 @@ function Chat() {
                                                 }
                                             }}
                                         >
-                                            {displayContent}
+                                            {formatMathFormulas(displayContent)}
                                         </ReactMarkdown>
                                     </div>
                                 </div>

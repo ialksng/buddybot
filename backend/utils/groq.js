@@ -55,6 +55,12 @@ const getGroqAPIResponse = async (input, requestedModel) => {
         ? input.map(m => ({ role: m.role, content: m.content }))
         : [{ role: "user", content: String(input) }];
 
+    const SYSTEM_PROMPT = "You are BuddyBOT, a helpful, intelligent AI assistant created by ialksng. When writing mathematical expressions, constants, or equations, always format them clearly using standard LaTeX syntax: use inline math ($...$) for expressions within sentences and display math ($$...$$) for standalone formulas and equations. Always ensure math delimiters are complete.";
+
+    const fullMessages = messages[0]?.role === "system"
+        ? messages
+        : [{ role: "system", content: SYSTEM_PROMPT }, ...messages];
+
     const apiKey = process.env.GROQ_API_KEY;
     if (!apiKey) {
         throw new Error("GROQ_API_KEY is not configured in the environment.");
@@ -71,7 +77,7 @@ const getGroqAPIResponse = async (input, requestedModel) => {
             },
             body: JSON.stringify({
                 model: modelToUse,
-                messages: messages,
+                messages: fullMessages,
                 temperature: 0.7,
                 max_completion_tokens: 2048,
             })

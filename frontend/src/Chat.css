@@ -111,7 +111,7 @@
 
 .assistant-content {
     background: #ffffff;
-    color: #0f172a !important;
+    color: #0f172a;
     padding: 1rem 1.4rem;
     border-radius: 4px 18px 18px 18px;
     max-width: calc(100% - 45px);
@@ -122,9 +122,8 @@
 }
 
 .assistant-content p,
-.assistant-content li,
-.assistant-content span:not(.code-language):not(.copy-code-btn span) {
-    color: #1e293b !important;
+.assistant-content li {
+    color: #1e293b;
 }
 
 /* Markdown formatting inside assistant responses */
@@ -228,62 +227,152 @@
 
 /* Code block container */
 .code-block-container {
-    margin: 0.85rem 0;
-    border-radius: 8px;
+    margin: 1rem 0;
+    border-radius: 10px;
     overflow: hidden;
-    background-color: #1a1b26;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    background-color: #1a1b26 !important;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.22);
 }
 
 .code-block-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 0.45rem 0.9rem;
+    padding: 0.5rem 1rem;
     background-color: #13141f;
     border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .code-language {
-    font-size: 0.75rem;
-    font-weight: 600;
+    font-size: 0.76rem;
+    font-weight: 700;
     text-transform: uppercase;
-    color: #94a3b8;
-    letter-spacing: 0.05em;
+    color: #7aa2f7 !important;
+    letter-spacing: 0.06em;
 }
 
 .copy-code-btn {
-    background: transparent;
-    border: none;
-    color: #cbd5e1;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #cbd5e1 !important;
     font-size: 0.78rem;
     cursor: pointer;
     display: flex;
     align-items: center;
-    gap: 0.35rem;
-    padding: 0.25rem 0.5rem;
-    border-radius: 4px;
+    gap: 0.4rem;
+    padding: 0.3rem 0.65rem;
+    border-radius: 5px;
     transition: all 0.15s ease;
 }
 
 .copy-code-btn:hover {
-    background: rgba(255, 255, 255, 0.1);
-    color: #ffffff;
+    background: rgba(255, 255, 255, 0.15);
+    color: #ffffff !important;
+}
+
+.copy-code-btn span,
+.copy-code-btn i {
+    color: inherit !important;
 }
 
 .code-block-pre {
     margin: 0;
-    padding: 0.85rem 1rem;
+    padding: 1rem 1.15rem;
     overflow-x: auto;
     font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-    font-size: 0.88rem;
-    line-height: 1.5;
+    font-size: 0.9rem;
+    line-height: 1.6;
+    background-color: #1a1b26 !important;
 }
 
 .code-block-pre code {
     background: transparent !important;
     padding: 0 !important;
+    color: #c0caf5 !important;
+    font-family: inherit;
+    font-size: inherit;
+}
+
+/* Tokyo Night Syntax Highlighting explicit bright colors */
+.code-block-pre .hljs-keyword,
+.code-block-pre .hljs-selector-tag,
+.code-block-pre .hljs-built_in,
+.code-block-pre .hljs-doctag {
+    color: #bb9af7 !important;
+    font-weight: 600;
+}
+
+.code-block-pre .hljs-string,
+.code-block-pre .hljs-title,
+.code-block-pre .hljs-section,
+.code-block-pre .hljs-meta .hljs-string {
+    color: #9ece6a !important;
+}
+
+.code-block-pre .hljs-comment,
+.code-block-pre .hljs-quote {
+    color: #7982a9 !important;
+    font-style: italic;
+}
+
+.code-block-pre .hljs-variable,
+.code-block-pre .hljs-template-variable,
+.code-block-pre .hljs-tag,
+.code-block-pre .hljs-name {
+    color: #f7768e !important;
+}
+
+.code-block-pre .hljs-attr,
+.code-block-pre .hljs-attribute {
+    color: #7dcfff !important;
+}
+
+.code-block-pre .hljs-number,
+.code-block-pre .hljs-literal {
+    color: #ff9e64 !important;
+}
+
+.code-block-pre .hljs-type,
+.code-block-pre .hljs-params,
+.code-block-pre .hljs-class {
+    color: #e0af68 !important;
+}
+
+.code-block-pre .hljs-function,
+.code-block-pre .hljs-title.hljs-function {
+    color: #7aa2f7 !important;
+}
+
+.code-block-pre .hljs-punctuation,
+.code-block-pre .hljs-operator {
+    color: #89ddff !important;
+}
+
+/* KaTeX Math Formula Rendering */
+.katex-display {
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding: 0.75rem 0.5rem;
+    margin: 1rem 0 !important;
+    text-align: center;
+    background: #f8fafc;
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+}
+
+.katex {
+    font-size: 1.1em;
+    color: #0f172a !important;
+    line-height: 1.25;
+}
+
+.katex * {
+    color: inherit;
+}
+
+.katex-display > .katex {
+    text-align: center;
 }
 
 @keyframes fadeIn {
