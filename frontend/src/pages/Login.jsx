@@ -2,7 +2,7 @@ import "./Auth.css";
 import axios from "axios";
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { API_URL } from "../apiConfig.js";
+import { API_URL, GOOGLE_AUTH_URL } from "../apiConfig.js";
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -36,7 +36,7 @@ export default function Login() {
   };
 
   const handleGoogle = () => {
-    window.location.href = `${API_URL}/api/auth/google`;
+    window.location.href = GOOGLE_AUTH_URL;
   };
 
   return (

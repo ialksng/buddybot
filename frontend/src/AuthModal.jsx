@@ -2,7 +2,7 @@ import "./AuthModal.css";
 import { useState } from "react";
 import axios from "axios";
 import buddyBotLogo from "./assets/buddy-bot.png";
-import { API_URL } from "./apiConfig.js";
+import { API_URL, GOOGLE_AUTH_URL } from "./apiConfig.js";
 
 export default function AuthModal({ isOpen, onClose, onAuthSuccess, initialMode = "login" }) {
   if (!isOpen) return null;
@@ -48,7 +48,7 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess, initialMode 
   };
 
   const handleGoogle = () => {
-    window.location.href = `${API_URL}/api/auth/google`;
+    window.location.href = GOOGLE_AUTH_URL;
   };
 
   return (
