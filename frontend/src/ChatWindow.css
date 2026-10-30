@@ -415,6 +415,32 @@
     font-weight: 500;
 }
 
+.loader-stop-btn {
+    margin-left: 0.5rem;
+    background: #ef4444;
+    color: #ffffff;
+    border: none;
+    border-radius: 6px;
+    padding: 0.22rem 0.65rem;
+    font-size: 0.76rem;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    cursor: pointer;
+    box-shadow: 0 2px 6px rgba(239, 68, 68, 0.35);
+    transition: all 0.18s ease;
+}
+
+.loader-stop-btn:hover {
+    background: #dc2626;
+    transform: scale(1.05);
+}
+
+.loader-stop-btn i {
+    font-size: 0.65rem;
+}
+
 /* Guest limit notification banner */
 .guest-limit-banner {
     background: rgba(239, 119, 34, 0.2);
@@ -495,6 +521,26 @@ input::placeholder {
 #submit:hover {
     background: #d96515;
     transform: scale(1.05);
+}
+
+.stop-btn-active {
+    background: #ef4444 !important;
+    box-shadow: 0 2px 8px rgba(239, 68, 68, 0.45) !important;
+    animation: stopPulse 1.8s infinite;
+}
+
+.stop-btn-active:hover {
+    background: #dc2626 !important;
+    transform: scale(1.08) !important;
+}
+
+@keyframes stopPulse {
+    0%, 100% {
+        box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.5);
+    }
+    50% {
+        box-shadow: 0 0 0 6px rgba(239, 68, 68, 0);
+    }
 }
 
 .info {

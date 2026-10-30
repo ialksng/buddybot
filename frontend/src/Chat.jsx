@@ -23,22 +23,28 @@ export function formatMathFormulas(content) {
     if (!content || typeof content !== "string") return "";
     let text = content;
 
-    // 1. Convert standard LaTeX display math \[ ... \] to $$ ... $$
+    // 1. Standard LaTeX display math: \[ ... \] -> $$ ... $$
     text = text.replace(/\\\[([\s\S]*?)\\\]/g, (_, math) => `\n$$\n${math.trim()}\n$$\n`);
 
-    // 2. Convert standard LaTeX inline math \( ... \) to $ ... $
+    // 2. Standard LaTeX inline math: \( ... \) -> $ ... $
     text = text.replace(/\\\(([\s\S]*?)\\\)/g, (_, math) => `$${math.trim()}$`);
 
-    // 3. Convert standalone bracketed LaTeX expressions like [ \boxed{...} ] or [ \frac{...} ]
-    // that are NOT markdown links (i.e. not followed by '(' or ':')
-    text = text.replace(/(^|\n|\s)\[\s*(\\boxed[\s\S]*?|\\frac[\s\S]*?|\\[a-zA-Z]{2,}[\s\S]*?)\s*\](?!\s*[\(:])/g,
+    // 3. Standalone bracketed block math: [ \boxed{...} ] or [ F = G \frac{...} ]
+    // that is NOT a markdown link [text](url) or footnote [^1]
+    text = text.replace(/(^|\n)\s*\[\s*(\\boxed[\s\S]*?|\\frac[\s\S]*?|\\[a-zA-Z]{2,}[\s\S]*?|[A-Z]\s*=[\s\S]*?\\(?:frac|times|sum|int)[\s\S]*?)\s*\](?!\s*[\(:])/g,
         (match, prefix, math) => `${prefix}\n$$\n${math.trim()}\n$$\n`
     );
 
-    // 4. Wrap un-delimited math expressions like `\approx (6.67430 \times 10^{-11}...)` in $...$
-    text = text.replace(/(^|[^$\\\w])(\\approx\s+[^\n$|]+)/g, (match, prefix, expr) => {
-        return `${prefix}$${expr.trim()}$`;
-    });
+    // 4. Standalone lines that are clearly formulas: e.g. "F = G \frac{...}{...}" on its own line
+    text = text.replace(/(^|\n)\s*([A-Za-z]\s*=\s*(?:[A-Za-z0-9\s\+\-\*\/\(\)\,\.]*\\(?:frac|times|sqrt|sum|int|boxed)[\s\S]*?))\s*(?=\n|$)/g,
+        (match, prefix, math) => {
+            if (math.includes("$")) return match; // already delimited
+            return `${prefix}\n$$\n${math.trim()}\n$$\n`;
+        }
+    );
+
+    // 5. Clean up any accidental double-dollar collisions:
+    text = text.replace(/\$\$\s*\$\$/g, "$$");
 
     return text;
 }
@@ -77,8 +83,9 @@ function CodeBlock({ language, rawCode, children }) {
 }
 
 function Chat() {
-    const { newChat, prevChats, reply } = useContext(MyContext);
+    const { newChat, prevChats, reply, stopGenerationTrigger, setIsGenerating } = useContext(MyContext);
     const [latestReply, setLatestReply] = useState(null);
+    const typingIntervalRef = useRef(null);
     const chatEndRef = useRef(null);
 
     // Auto-scroll to bottom on new chats or typing updates
@@ -86,27 +93,49 @@ function Chat() {
         chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
     }, [prevChats, latestReply]);
 
+    // Handle user clicking stop during typing animation
+    useEffect(() => {
+        if (stopGenerationTrigger && typingIntervalRef.current) {
+            clearInterval(typingIntervalRef.current);
+            typingIntervalRef.current = null;
+            setLatestReply(null); // Finish/freeze typing, show current content
+            if (setIsGenerating) setIsGenerating(false);
+        }
+    }, [stopGenerationTrigger, setIsGenerating]);
+
     useEffect(() => {
         if (!reply) {
             setLatestReply(null);
+            if (setIsGenerating) setIsGenerating(false);
             return;
         }
 
         if (!prevChats?.length) return;
 
+        if (typingIntervalRef.current) {
+            clearInterval(typingIntervalRef.current);
+        }
+
+        if (setIsGenerating) setIsGenerating(true);
         const words = reply.split(" ");
         let idx = 0;
-        const interval = setInterval(() => {
+        typingIntervalRef.current = setInterval(() => {
             setLatestReply(words.slice(0, idx + 1).join(" "));
             idx++;
             if (idx >= words.length) {
-                clearInterval(interval);
+                clearInterval(typingIntervalRef.current);
+                typingIntervalRef.current = null;
                 setLatestReply(null); // Finish typing, revert to static content
+                if (setIsGenerating) setIsGenerating(false);
             }
         }, 25);
 
-        return () => clearInterval(interval);
-    }, [reply]);
+        return () => {
+            if (typingIntervalRef.current) {
+                clearInterval(typingIntervalRef.current);
+            }
+        };
+    }, [reply, setIsGenerating]);
 
     return (
         <div className="chats-container">

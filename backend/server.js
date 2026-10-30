@@ -86,7 +86,7 @@ const verifyToken = (req, res, next) => {
     const decoded = jwt.verify(token, secret);
     req.user = {
       ...decoded,
-      id: decoded.id || decoded._id,
+      id: decoded.id || decoded._id || decoded.userId || decoded.sub,
     };
     next();
   } catch (err) {

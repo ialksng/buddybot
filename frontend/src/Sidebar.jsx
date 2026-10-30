@@ -22,8 +22,10 @@ function Sidebar() {
   };
 
   const getAllThreads = async () => {
-    if (!isAuthenticated) {
+    const token = localStorage.getItem("token");
+    if (!token && !isAuthenticated) {
       setAllThreads([]);
+      localStorage.removeItem("cached_threads");
       return;
     }
     try {
@@ -34,29 +36,38 @@ function Sidebar() {
       if (Array.isArray(res)) {
         const filteredData = res.map(thread => ({threadId: thread.threadId, title: thread.title}));
         setAllThreads(filteredData);
+        localStorage.setItem("cached_threads", JSON.stringify(filteredData));
       }
     } catch(err) {
-      console.log(err);
+      console.log("Failed to fetch threads, keeping cached state:", err);
     }
   };
 
   useEffect(() => {
-    if (isAuthenticated) {
+    if (isAuthenticated || localStorage.getItem("token")) {
       getAllThreads();
     }
-  }, [currThreadId, isAuthenticated]);
+  }, [isAuthenticated]);
 
   const createNewChat = () => {
+    const newId = uuidv1();
     setNewChat(true);
     setPrompt("");
     setReply(null);
-    setCurrThreadId(uuidv1());
+    setCurrThreadId(newId);
     setPrevChats([]);
+    localStorage.setItem("active_thread_id", newId);
+    localStorage.removeItem("active_thread_chats");
     if (setIsSidebarOpen) setIsSidebarOpen(false);
   };
 
   const changeThread = async (newThreadId) => {
+    if (newThreadId === currThreadId && prevChats.length > 0) {
+      if (setIsSidebarOpen) setIsSidebarOpen(false);
+      return;
+    }
     setCurrThreadId(newThreadId);
+    localStorage.setItem("active_thread_id", newThreadId);
     if (setIsSidebarOpen) setIsSidebarOpen(false);
 
     try {
@@ -64,12 +75,14 @@ function Sidebar() {
         headers: getAuthHeaders(),
       });
       const res = await response.json();
-      console.log(res);
-      setPrevChats(Array.isArray(res) ? res : []);
-      setNewChat(false);
+      if (Array.isArray(res)) {
+        setPrevChats(res);
+        localStorage.setItem("active_thread_chats", JSON.stringify(res));
+        setNewChat(res.length === 0);
+      }
       setReply(null);
     } catch(err) {
-      console.log(err);
+      console.log("Failed to load thread messages:", err);
     }
   };
 
@@ -79,20 +92,21 @@ function Sidebar() {
         method: "DELETE",
         headers: getAuthHeaders(),
       });      
-      const res = await response.json();
-      console.log(res);
+      await response.json();
 
-      //updated threads re-render
-      setAllThreads(prev => prev.filter(thread => thread.threadId !== threadId));
+      setAllThreads(prev => {
+        const updated = prev.filter(thread => thread.threadId !== threadId);
+        localStorage.setItem("cached_threads", JSON.stringify(updated));
+        return updated;
+      });
 
       if(threadId === currThreadId) {
           createNewChat();
       }
-
     } catch(err) {
-      console.log(err);
+      console.log("Failed to delete thread:", err);
     }
-  }
+  };
 
   return (
     <>

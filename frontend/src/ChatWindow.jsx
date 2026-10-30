@@ -21,6 +21,8 @@ function ChatWindow() {
         selectedModel, setSelectedModel,
         currentUser, setCurrentUser,
         isSidebarOpen, setIsSidebarOpen,
+        isGenerating, setIsGenerating,
+        setStopGenerationTrigger,
     } = useContext(MyContext);
 
     const [loading, setLoading] = useState(false);
@@ -30,6 +32,7 @@ function ChatWindow() {
 
     const modelMenuRef = useRef(null);
     const profileMenuRef = useRef(null);
+    const abortControllerRef = useRef(null);
 
     const isGuestLimitReached = !isAuthenticated && guestCount >= 1;
 
@@ -65,11 +68,14 @@ function ChatWindow() {
     const handleLogout = () => {
         localStorage.removeItem("token");
         localStorage.removeItem("user");
+        localStorage.removeItem("guest_msg_count");
+        localStorage.removeItem("guest_thread_id");
+        localStorage.removeItem("cached_threads");
+        localStorage.removeItem("active_thread_id");
+        localStorage.removeItem("active_thread_chats");
         setIsAuthenticated(false);
         setCurrentUser(null);
         setGuestCount(0);
-        localStorage.removeItem("guest_msg_count");
-        localStorage.removeItem("guest_thread_id");
         setAllThreads([]);
         setPrevChats([]);
         setNewChat(true);
@@ -78,9 +84,19 @@ function ChatWindow() {
         setIsProfileOpen(false);
     };
 
+    const handleStop = () => {
+        if (abortControllerRef.current) {
+            abortControllerRef.current.abort();
+            abortControllerRef.current = null;
+        }
+        setLoading(false);
+        setIsGenerating(false);
+        setStopGenerationTrigger(Date.now());
+    };
+
     const getReply = async () => {
         const userPrompt = prompt.trim();
-        if (!userPrompt || loading) return;
+        if (!userPrompt || loading || isGenerating) return;
 
         // If guest already used their free message, prompt signup
         if (!isAuthenticated && guestCount >= 1) {
@@ -92,11 +108,14 @@ function ChatWindow() {
         setPrevChats(prev => [...prev, { role: "user", content: userPrompt }]);
         setPrompt("");
         setLoading(true);
+        setIsGenerating(true);
         setNewChat(false);
 
+        abortControllerRef.current = new AbortController();
         const token = localStorage.getItem("token");
         const options = {
             method: "POST",
+            signal: abortControllerRef.current.signal,
             headers: {
                 "Content-Type": "application/json",
                 ...(token ? { "Authorization": `Bearer ${token}` } : {})
@@ -124,7 +143,9 @@ function ChatWindow() {
                 .then(r => r.json())
                 .then(threads => {
                     if (Array.isArray(threads)) {
-                        setAllThreads(threads.map(t => ({ threadId: t.threadId, title: t.title })));
+                        const filtered = threads.map(t => ({ threadId: t.threadId, title: t.title }));
+                        setAllThreads(filtered);
+                        localStorage.setItem("cached_threads", JSON.stringify(filtered));
                     }
                 })
                 .catch(() => {});
@@ -143,13 +164,19 @@ function ChatWindow() {
                 }, 1500);
             }
         } catch (err) {
+            if (err.name === "AbortError") {
+                console.log("Chat response aborted by user.");
+                return;
+            }
             console.error("Chat error:", err);
             setPrevChats(prev => [
                 ...prev,
                 { role: "assistant", content: "⚠️ Could not connect to server. Please try again." }
             ]);
+            setIsGenerating(false);
         } finally {
             setLoading(false);
+            abortControllerRef.current = null;
         }
     };
 
@@ -281,10 +308,21 @@ function ChatWindow() {
 
             <Chat />
 
-            {loading && (
+            {(loading || isGenerating) && (
                 <div className="loader-container">
-                    <ScaleLoader color="#ffffff" height={22} width={3} radius={2} margin={2} />
-                    <span className="loader-text">Generating response...</span>
+                    <ScaleLoader color="#ef7722" height={18} width={3} radius={2} margin={2} />
+                    <span className="loader-text">
+                        {loading ? "Generating response..." : "Typing response..."}
+                    </span>
+                    <button
+                        type="button"
+                        className="loader-stop-btn"
+                        onClick={handleStop}
+                        title="Stop generating response"
+                    >
+                        <i className="fa-solid fa-square"></i>
+                        <span>Stop</span>
+                    </button>
                 </div>
             )}
 
@@ -296,14 +334,19 @@ function ChatWindow() {
                 )}
                 <div className="inputBox">
                     <input
-                        placeholder={isGuestLimitReached ? "Sign up or log in to continue chatting..." : "Ask anything"}
+                        placeholder={
+                            isGuestLimitReached
+                                ? "Sign up or log in to continue chatting..."
+                                : (loading || isGenerating ? "AI is generating response..." : "Ask anything")
+                        }
                         value={prompt}
+                        disabled={loading || isGenerating}
                         onChange={(e) => setPrompt(e.target.value)}
                         onKeyDown={(e) => {
                             if (e.key === 'Enter') {
                                 if (isGuestLimitReached) {
                                     setShowAuthModal(true);
-                                } else {
+                                } else if (!loading && !isGenerating) {
                                     getReply();
                                 }
                             }
@@ -312,13 +355,24 @@ function ChatWindow() {
                             if (isGuestLimitReached) setShowAuthModal(true);
                         }}
                     />
-                    <div
-                        id="submit"
-                        onClick={() => isGuestLimitReached ? setShowAuthModal(true) : getReply()}
-                        title={isGuestLimitReached ? "Sign up to send" : "Send message"}
-                    >
-                        <i className={isGuestLimitReached ? "fa-solid fa-lock" : "fa-solid fa-paper-plane"}></i>
-                    </div>
+                    {loading || isGenerating ? (
+                        <div
+                            id="submit"
+                            className="stop-btn-active"
+                            onClick={handleStop}
+                            title="Stop response"
+                        >
+                            <i className="fa-solid fa-square"></i>
+                        </div>
+                    ) : (
+                        <div
+                            id="submit"
+                            onClick={() => isGuestLimitReached ? setShowAuthModal(true) : getReply()}
+                            title={isGuestLimitReached ? "Sign up to send" : "Send message"}
+                        >
+                            <i className={isGuestLimitReached ? "fa-solid fa-lock" : "fa-solid fa-paper-plane"}></i>
+                        </div>
+                    )}
                 </div>
                 <p className="info">
                     BuddyBOT can make mistakes. Check important info.

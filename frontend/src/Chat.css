@@ -375,6 +375,13 @@
     text-align: center;
 }
 
+.katex-error {
+    color: #1e293b !important;
+    background: transparent !important;
+    font-family: inherit !important;
+    font-size: 1em !important;
+}
+
 @keyframes fadeIn {
     from {
         opacity: 0;

@@ -37,6 +37,16 @@ router.get(["/thread", "/chat/thread"], async(req, res) => {
         if (mongoose.Types.ObjectId.isValid(userIdStr)) {
             queryOr.push({ userId: new mongoose.Types.ObjectId(userIdStr) });
         }
+        if (req.user.email) {
+            queryOr.push({ userId: req.user.email });
+        }
+        if (req.user._id && String(req.user._id) !== userIdStr) {
+            const rawId = String(req.user._id);
+            queryOr.push({ userId: rawId });
+            if (mongoose.Types.ObjectId.isValid(rawId)) {
+                queryOr.push({ userId: new mongoose.Types.ObjectId(rawId) });
+            }
+        }
 
         const threads = await Thread.find({ $or: queryOr }).sort({ updatedAt: -1 });
         res.json(threads);

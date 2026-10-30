@@ -153,10 +153,40 @@ function App() {
 
   const [prompt, setPrompt] = useState("");
   const [reply, setReply] = useState(null);
-  const [currThreadId, setCurrThreadId] = useState(uuidv1());
-  const [prevChats, setPrevChats] = useState([]);
-  const [newChat, setNewChat] = useState(true);
-  const [allThreads, setAllThreads] = useState([]);
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [stopGenerationTrigger, setStopGenerationTrigger] = useState(0);
+
+  const [currThreadId, setCurrThreadId] = useState(() => {
+    return localStorage.getItem("active_thread_id") || uuidv1();
+  });
+
+  const [prevChats, setPrevChats] = useState(() => {
+    try {
+      const cached = localStorage.getItem("active_thread_chats");
+      return cached ? JSON.parse(cached) : [];
+    } catch {
+      return [];
+    }
+  });
+
+  const [newChat, setNewChat] = useState(() => {
+    try {
+      const cached = localStorage.getItem("active_thread_chats");
+      return !cached || JSON.parse(cached).length === 0;
+    } catch {
+      return true;
+    }
+  });
+
+  const [allThreads, setAllThreads] = useState(() => {
+    try {
+      const cached = localStorage.getItem("cached_threads");
+      return cached ? JSON.parse(cached) : [];
+    } catch {
+      return [];
+    }
+  });
+
   const [selectedModel, setSelectedModel] = useState(() => {
     const saved = localStorage.getItem("selected_model");
     if (!saved || saved.includes("llama") || saved.includes("gemma") || saved.includes("mixtral")) {
@@ -170,6 +200,18 @@ function App() {
   useEffect(() => {
     localStorage.setItem("selected_model", selectedModel);
   }, [selectedModel]);
+
+  useEffect(() => {
+    if (currThreadId) {
+      localStorage.setItem("active_thread_id", currThreadId);
+    }
+  }, [currThreadId]);
+
+  useEffect(() => {
+    if (prevChats && prevChats.length > 0) {
+      localStorage.setItem("active_thread_chats", JSON.stringify(prevChats));
+    }
+  }, [prevChats]);
 
   const providerValues = {
     prompt,
@@ -196,6 +238,10 @@ function App() {
     setCurrentUser,
     isSidebarOpen,
     setIsSidebarOpen,
+    isGenerating,
+    setIsGenerating,
+    stopGenerationTrigger,
+    setStopGenerationTrigger,
   };
 
   if (!isAuthReady) return null; // wait until we check token

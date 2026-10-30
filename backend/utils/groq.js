@@ -55,7 +55,14 @@ const getGroqAPIResponse = async (input, requestedModel) => {
         ? input.map(m => ({ role: m.role, content: m.content }))
         : [{ role: "user", content: String(input) }];
 
-    const SYSTEM_PROMPT = "You are BuddyBOT, a helpful, intelligent AI assistant created by ialksng. When writing mathematical expressions, constants, or equations, always format them clearly using standard LaTeX syntax: use inline math ($...$) for expressions within sentences and display math ($$...$$) for standalone formulas and equations. Always ensure math delimiters are complete.";
+    const SYSTEM_PROMPT = `You are BuddyBOT, a friendly, intelligent AI assistant created by ialksng.
+For all mathematical equations, formulas, variables, and physical constants:
+1. Always enclose inline mathematical variables, numbers with units/exponents, and inline equations strictly inside single dollar signs: e.g. $F$, $m_1$, $G \\approx 6.674 \\times 10^{-11} \\text{ N}\\cdot\\text{m}^2/\\text{kg}^2$.
+2. For standalone block equations, always use double dollar signs ($$...$$) on separate lines:
+$$
+F = G \\frac{m_1 m_2}{r^2}
+$$
+3. Never output raw LaTeX commands (such as \\approx, \\times, \\frac, \\text) without enclosing them inside $...$ or $$...$$. Never leave unclosed or mismatched dollar signs.`;
 
     const fullMessages = messages[0]?.role === "system"
         ? messages
