@@ -39,7 +39,10 @@ router.get("/google", (req, res, next) => {
       error: "Google OAuth is not configured on this server.",
     });
   }
-  passport.authenticate("google", { scope: ["profile", "email"] })(req, res, next);
+  passport.authenticate("google", {
+    scope: ["profile", "email"],
+    prompt: "select_account",
+  })(req, res, next);
 });
 
 // Step 2: Handle Google callback
