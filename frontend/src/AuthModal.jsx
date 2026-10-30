@@ -4,10 +4,10 @@ import axios from "axios";
 import buddyBotLogo from "./assets/buddy-bot.png";
 import { API_URL } from "./apiConfig.js";
 
-export default function AuthModal({ isOpen, onClose, onAuthSuccess }) {
+export default function AuthModal({ isOpen, onClose, onAuthSuccess, initialMode = "login" }) {
   if (!isOpen) return null;
 
-  const [mode, setMode] = useState("signup"); // "signup" or "login"
+  const [mode, setMode] = useState(initialMode);
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");

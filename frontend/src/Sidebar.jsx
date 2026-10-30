@@ -129,9 +129,15 @@ function Sidebar() {
         </div>
       )}
 
-      {/* signup */}
       <div className="sign">
-        <p>By <a href="https://linktr.ee/ialksng">ialksng</a><span> &hearts;</span></p>
+        <a
+          href="https://ialksng.me"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="ialksng-btn"
+        >
+          ialksng
+        </a>
       </div>
     </section>
   );

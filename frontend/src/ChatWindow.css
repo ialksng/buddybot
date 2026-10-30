@@ -267,24 +267,23 @@
     transition: all 0.2s ease;
 }
 
-.nav-auth-btn.login {
-    background: rgba(255, 255, 255, 0.18);
-    color: #ffffff;
-    border: 1px solid rgba(255, 255, 255, 0.25);
-}
-
-.nav-auth-btn.login:hover {
-    background: rgba(255, 255, 255, 0.28);
-}
-
-.nav-auth-btn.signup {
+.nav-auth-btn.login-only {
     background: #ef7722;
     color: #ffffff;
-    box-shadow: 0 2px 8px rgba(239, 119, 34, 0.3);
+    font-size: 0.88rem;
+    font-weight: 600;
+    padding: 0.5rem 1.25rem;
+    border-radius: 10px;
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(239, 119, 34, 0.35);
+    transition: all 0.2s ease;
 }
 
-.nav-auth-btn.signup:hover {
+.nav-auth-btn.login-only:hover {
     background: #d96515;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(239, 119, 34, 0.45);
 }
 
 /* Loader */

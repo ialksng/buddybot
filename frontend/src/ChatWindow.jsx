@@ -215,8 +215,13 @@ function ChatWindow() {
                     </div>
                 ) : (
                     <div className="nav-auth-actions">
-                        <button className="nav-auth-btn login" onClick={() => setShowAuthModal(true)}>Log in</button>
-                        <button className="nav-auth-btn signup" onClick={() => setShowAuthModal(true)}>Sign up</button>
+                        <button
+                            type="button"
+                            className="nav-auth-btn login-only"
+                            onClick={() => setShowAuthModal(true)}
+                        >
+                            Log in
+                        </button>
                     </div>
                 )}
             </div>

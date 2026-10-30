@@ -37,3 +37,4 @@ export const DEFAULT_MODELS = [
         badge: "Speed",
     }
 ];
+
