@@ -4,17 +4,19 @@ import { Strategy as GoogleStrategy } from "passport-google-oauth20";
 import User from "../models/User.js";
 
 if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
+  // Use production domain callback authorized in Google Cloud Console
   const defaultCallback =
-    process.env.NODE_ENV === "production"
+    process.env.GOOGLE_CALLBACK_URL ||
+    (process.env.NODE_ENV === "production"
       ? "https://ialksng.me/work/projects/buddybot/app/api/auth/google/callback"
-      : "/api/auth/google/callback";
+      : "/api/auth/google/callback");
 
   passport.use(
     new GoogleStrategy(
       {
         clientID: process.env.GOOGLE_CLIENT_ID,
         clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-        callbackURL: process.env.GOOGLE_CALLBACK_URL || defaultCallback,
+        callbackURL: defaultCallback,
       },
       async (accessToken, refreshToken, profile, done) => {
         try {

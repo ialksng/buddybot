@@ -1,6 +1,6 @@
 import "./Auth.css";
 import axios from "axios";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { API_URL, GOOGLE_AUTH_URL } from "../apiConfig.js";
 
@@ -9,6 +9,14 @@ export default function Login() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const err = params.get("error");
+    if (err) {
+      setError(`Authentication error: ${decodeURIComponent(err)}`);
+    }
+  }, []);
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -44,8 +52,7 @@ export default function Login() {
       <nav className="auth-navbar">
         <Link to="/" className="dashboard-logo" style={{ textDecoration: "none", color: "inherit" }}>BuddyBOT</Link>
         <div className="nav-actions">
-          <Link to="/login" className="nav-btn">Login</Link>
-          <Link to="/signup" className="nav-btn signup">Sign Up</Link>
+          <Link to="/" className="nav-btn">Chat</Link>
         </div>
       </nav>
 

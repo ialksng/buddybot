@@ -46,8 +46,7 @@ export default function Signup() {
       <nav className="auth-navbar">
         <Link to="/" className="dashboard-logo" style={{ textDecoration: "none", color: "inherit" }}>BuddyBOT</Link>
         <div className="nav-actions">
-          <Link to="/login" className="nav-btn">Login</Link>
-          <Link to="/signup" className="nav-btn signup">Sign Up</Link>
+          <Link to="/" className="nav-btn">Chat</Link>
         </div>
       </nav>
 

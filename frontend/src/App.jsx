@@ -135,8 +135,8 @@ function App() {
             }).catch(e => console.log(e));
             localStorage.removeItem("guest_thread_id");
           }
-        } else {
-          // Token expired or invalid: reset cleanly to guest
+        } else if (parsed && parsed.exp && parsed.exp * 1000 < Date.now()) {
+          // Token genuinely expired: reset cleanly to guest
           localStorage.removeItem("token");
           localStorage.removeItem("user");
           setIsAuthenticated(false);
@@ -212,6 +212,7 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
         <Route path="/dashboard" element={<Navigate to="/" replace />} />
+        <Route path="/api/auth/google/callback" element={<Navigate to="/" replace />} />
 
         {/* default redirect to chat */}
         <Route path="*" element={<Navigate to="/" replace />} />
