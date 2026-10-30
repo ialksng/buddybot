@@ -12,7 +12,8 @@ function Sidebar() {
     setNewChat, setPrompt, setReply,
     setCurrThreadId, setPrevChats,
     isAuthenticated,
-    setShowAuthModal
+    setShowAuthModal,
+    isSidebarOpen, setIsSidebarOpen,
   } = useContext(MyContext);
 
   const getAuthHeaders = () => {
@@ -51,10 +52,12 @@ function Sidebar() {
     setReply(null);
     setCurrThreadId(uuidv1());
     setPrevChats([]);
-  }
+    if (setIsSidebarOpen) setIsSidebarOpen(false);
+  };
 
   const changeThread = async (newThreadId) => {
     setCurrThreadId(newThreadId);
+    if (setIsSidebarOpen) setIsSidebarOpen(false);
 
     try {
       const response = await fetch(`${API_URL}/api/thread/${newThreadId}`, {
@@ -68,7 +71,7 @@ function Sidebar() {
     } catch(err) {
       console.log(err);
     }
-  }
+  };
 
   const deleteThread = async (threadId) => {
     try {
@@ -92,12 +95,26 @@ function Sidebar() {
   }
 
   return (
-    <section className="sidebar">
-      {/* new chat button */}
-      <button onClick={createNewChat}>
-        <img src={buddyBotLogo} alt="buddy-bot" className="logo"></img>
-        <span><i className="fa-solid fa-pen-to-square"></i></span>
-      </button>
+    <>
+      <div
+        className={`sidebar-backdrop ${isSidebarOpen ? "visible" : ""}`}
+        onClick={() => setIsSidebarOpen(false)}
+      />
+      <section className={`sidebar ${isSidebarOpen ? "open" : ""}`}>
+        {/* new chat button and mobile close */}
+        <div className="sidebar-top-bar">
+          <button className="new-chat-btn" onClick={createNewChat}>
+            <img src={buddyBotLogo} alt="buddy-bot" className="logo"></img>
+            <span><i className="fa-solid fa-pen-to-square"></i></span>
+          </button>
+          <button
+            className="mobile-close-sidebar-btn"
+            onClick={() => setIsSidebarOpen(false)}
+            aria-label="Close sidebar"
+          >
+            <i className="fa-solid fa-xmark"></i>
+          </button>
+        </div>
 
       {/* history or guest prompt */}
       {isAuthenticated ? (
@@ -150,6 +167,7 @@ function Sidebar() {
         </a>
       </div>
     </section>
+  </>
   );
 }
 

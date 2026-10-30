@@ -1,40 +1,117 @@
 .sidebar {
-    /* background-color: #171717; */
     background-color: #5D688A;
     color: #b4b4b4;
-    height: 100vh; /*100% of the viewport height → the element will stretch to the full visible height of the screen.*/
-    width: 320px;
+    height: 100vh;
+    width: 280px;
+    flex-shrink: 0;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
+    z-index: 100;
+    transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-button {
+.sidebar-backdrop {
+    display: none;
+}
+
+.sidebar-top-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.5rem 0.5rem 0.2rem 0.5rem;
+    gap: 0.5rem;
+}
+
+.new-chat-btn {
+    flex: 1;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin: 10px;
-    padding: 10px;
-    border-radius: 25px;
-    background-color: transparent;
-    border: solid 0.5px rgba(255, 255, 255, 0.5);
+    margin: 6px;
+    padding: 8px 14px;
+    border-radius: 20px;
+    background-color: rgba(255, 255, 255, 0.08);
+    border: solid 1px rgba(255, 255, 255, 0.3);
     cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.new-chat-btn:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+    border-color: rgba(255, 255, 255, 0.5);
+}
+
+.mobile-close-sidebar-btn {
+    display: none;
+    background: rgba(255, 255, 255, 0.12);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: #ffffff;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+}
+
+.mobile-close-sidebar-btn:hover {
+    background: rgba(255, 255, 255, 0.25);
 }
 
 .logo {
-    height: 25px;
-    width: 25px;
-    /* background-color: #fff; */
+    height: 24px;
+    width: 24px;
     border-radius: 50%;
     object-fit: cover;
 }
 
-button span {
-    font-size: 20px;
+.new-chat-btn span {
+    font-size: 16px;
+    color: #ffffff;
 }
 
-button:hover {
-    background-color: rgba(180, 180, 180, 0.15);
+@media (max-width: 768px) {
+    .sidebar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        bottom: 0;
+        width: 280px;
+        max-width: 82vw;
+        z-index: 1000;
+        transform: translateX(-100%);
+        box-shadow: none;
+    }
+
+    .sidebar.open {
+        transform: translateX(0);
+        box-shadow: 6px 0 24px rgba(0, 0, 0, 0.45);
+    }
+
+    .sidebar-backdrop {
+        display: block;
+        position: fixed;
+        inset: 0;
+        background-color: rgba(15, 23, 42, 0.6);
+        backdrop-filter: blur(4px);
+        z-index: 999;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.25s ease;
+    }
+
+    .sidebar-backdrop.visible {
+        opacity: 1;
+        pointer-events: auto;
+    }
+
+    .mobile-close-sidebar-btn {
+        display: flex;
+    }
 }
 
 .history {

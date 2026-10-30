@@ -9,27 +9,6 @@ router.get(["/models", "/chat/models"], (req, res) => {
     res.json(GROQ_MODELS);
 });
 
-router.get("/debug-groq", async (req, res) => {
-    const key = process.env.GROQ_API_KEY || "";
-    const keyPreview = key ? `${key.substring(0, 6)}...${key.substring(key.length - 4)} (length: ${key.length})` : "NOT_SET";
-    try {
-        const response = await fetch("https://api.groq.com/openai/v1/models", {
-            headers: {
-                "Authorization": `Bearer ${key.trim()}`
-            }
-        });
-        const data = await response.json();
-        res.json({
-            status: response.status,
-            ok: response.ok,
-            keyPreview,
-            models: data.data ? data.data.map(m => m.id) : data
-        });
-    } catch (e) {
-        res.json({ error: e.message, keyPreview });
-    }
-});
-
 // test
 router.post("/test", async(req, res) => {
     try {

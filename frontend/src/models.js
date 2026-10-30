@@ -1,40 +1,40 @@
 export const DEFAULT_MODELS = [
     {
-        id: "llama-3.1-8b-instant",
-        name: "Llama 3.1 8B Instant",
-        description: "Ultra-fast, lowest latency, 128k context (Default)",
-        badge: "Fastest",
+        id: "openai/gpt-oss-120b",
+        name: "GPT OSS 120B",
+        description: "OpenAI 120B flagship model on Groq LPU (Smartest)",
+        badge: "Smartest",
         isDefault: true,
     },
     {
+        id: "openai/gpt-oss-20b",
+        name: "GPT OSS 20B",
+        description: "High speed, ultra low latency 20B model",
+        badge: "Fastest",
+    },
+    {
+        id: "qwen/qwen3.8-27b",
+        name: "Qwen 3.8 27B",
+        description: "Deep general reasoning & multilingual coding",
+        badge: "Balanced",
+    },
+    {
+        id: "allam-2-7b",
+        name: "Allam 2 7B",
+        description: "Compact 7B lightweight instruction model",
+        badge: "Compact",
+    },
+    {
         id: "llama-3.3-70b-versatile",
-        name: "Llama 3.3 70B Versatile",
-        description: "Flagship intelligence for reasoning and complex code",
-        badge: "Smartest",
+        name: "Llama 3.3 70B",
+        description: "Meta flagship 70B parameter model",
+        badge: "Meta",
     },
     {
-        id: "mixtral-8x7b-32768",
-        name: "Mixtral 8x7B",
-        description: "High quality MoE with 32k context window",
-        badge: "32k Context",
-    },
-    {
-        id: "gemma2-9b-it",
-        name: "Gemma 2 9B",
-        description: "Google's performant open instruction-tuned model",
-        badge: "Google",
-    },
-    {
-        id: "llama3-70b-8192",
-        name: "Llama 3 70B",
-        description: "Meta's popular 70B parameter model with 8k context",
-        badge: "Popular",
-    },
-    {
-        id: "llama3-8b-8192",
-        name: "Llama 3 8B",
-        description: "Meta Llama 3 8B instant generation",
-        badge: "Speed",
+        id: "llama-3.1-8b-instant",
+        name: "Llama 3.1 8B",
+        description: "Meta lightweight instant model",
+        badge: "Meta",
     }
 ];
 

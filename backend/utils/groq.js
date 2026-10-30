@@ -3,45 +3,51 @@ import "dotenv/config";
 // Curated list of high-quality models available on Groq
 export const GROQ_MODELS = [
     {
-        id: "llama-3.1-8b-instant",
-        name: "Llama 3.1 8B Instant",
-        description: "Ultra-fast, lowest latency, 128k context",
-        badge: "Fastest",
+        id: "openai/gpt-oss-120b",
+        name: "GPT OSS 120B",
+        description: "OpenAI 120B flagship model on Groq LPU (Smartest)",
+        badge: "Smartest",
         isDefault: true,
     },
     {
-        id: "llama-3.3-70b-versatile",
-        name: "Llama 3.3 70B Versatile",
-        description: "Meta's flagship model for reasoning & complex tasks",
-        badge: "Smartest",
+        id: "openai/gpt-oss-20b",
+        name: "GPT OSS 20B",
+        description: "High speed, ultra low latency 20B model",
+        badge: "Fastest",
     },
     {
-        id: "mixtral-8x7b-32768",
-        name: "Mixtral 8x7B",
-        description: "MoE architecture with 32k context window",
+        id: "qwen/qwen3.8-27b",
+        name: "Qwen 3.8 27B",
+        description: "Deep general reasoning & multilingual coding",
         badge: "Balanced",
     },
     {
-        id: "gemma2-9b-it",
-        name: "Gemma 2 9B",
-        description: "Google's high-efficiency open model",
-        badge: "Google",
+        id: "allam-2-7b",
+        name: "Allam 2 7B",
+        description: "Compact 7B lightweight instruction model",
+        badge: "Compact",
     },
     {
-        id: "llama3-70b-8192",
-        name: "Llama 3 70B",
-        description: "Meta's popular 70B parameter model",
-        badge: "Popular",
+        id: "llama-3.3-70b-versatile",
+        name: "Llama 3.3 70B",
+        description: "Meta flagship 70B parameter model",
+        badge: "Meta",
     },
     {
-        id: "llama3-8b-8192",
-        name: "Llama 3 8B",
-        description: "Standard Meta Llama 3 8B model",
-        badge: "Lightweight",
+        id: "llama-3.1-8b-instant",
+        name: "Llama 3.1 8B Instant",
+        description: "Meta lightweight instant model",
+        badge: "Meta",
     }
 ];
 
-const DEFAULT_MODEL = "llama-3.1-8b-instant";
+const DEFAULT_MODEL = "openai/gpt-oss-120b";
+const FALLBACK_MODELS = [
+    "openai/gpt-oss-120b",
+    "openai/gpt-oss-20b",
+    "qwen/qwen3.8-27b",
+    "allam-2-7b"
+];
 
 const getGroqAPIResponse = async (input, requestedModel) => {
     // Support either an array of messages or a single string prompt
@@ -79,17 +85,17 @@ const getGroqAPIResponse = async (input, requestedModel) => {
         let { ok, data } = await requestGroq(selectedModel);
 
         // If the requested model returns an error (e.g. not found, no access),
-        // gracefully fall back to the universally available DEFAULT_MODEL.
+        // gracefully fall back to active models supported on the key.
         if (!ok || data.error) {
             console.warn(`Groq API issue with model "${selectedModel}":`, data.error?.message || data);
 
-            if (selectedModel !== DEFAULT_MODEL) {
-                console.log(`Falling back to default model: "${DEFAULT_MODEL}"`);
-                const fallback = await requestGroq(DEFAULT_MODEL);
+            for (const fallbackModel of FALLBACK_MODELS) {
+                if (fallbackModel === selectedModel) continue;
+                console.log(`Trying fallback model: "${fallbackModel}"`);
+                const fallback = await requestGroq(fallbackModel);
                 if (fallback.ok && !fallback.data.error) {
                     return fallback.data.choices?.[0]?.message?.content || "No reply generated.";
                 }
-                data = fallback.data;
             }
 
             return data.error?.message || "Failed to generate reply from Groq.";

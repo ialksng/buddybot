@@ -20,6 +20,7 @@ function ChatWindow() {
         showAuthModal, setShowAuthModal,
         selectedModel, setSelectedModel,
         currentUser, setCurrentUser,
+        isSidebarOpen, setIsSidebarOpen,
     } = useContext(MyContext);
 
     const [loading, setLoading] = useState(false);
@@ -141,29 +142,40 @@ function ChatWindow() {
     return (
         <div className="chatWindow">
             <div className="navbar">
-                {/* Model Selector Dropdown */}
-                <div className="model-selector-wrapper" ref={modelMenuRef}>
+                <div className="nav-left-group">
+                    {/* Mobile Hamburger Toggle */}
                     <button
                         type="button"
-                        className={`model-selector-btn ${modelMenuOpen ? "active" : ""}`}
-                        onClick={() => setModelMenuOpen(!modelMenuOpen)}
-                        aria-label="Select AI Model"
+                        className="mobile-hamburger-btn"
+                        onClick={() => setIsSidebarOpen && setIsSidebarOpen(!isSidebarOpen)}
+                        aria-label="Toggle history menu"
                     >
-                        <span className="brand-name">BuddyBOT</span>
-                        <span className="active-model-pill">
-                            <i className="fa-solid fa-bolt"></i>
-                            <span>{activeModelObj.name}</span>
-                        </span>
-                        <i className={`fa-solid fa-chevron-down chevron-icon ${modelMenuOpen ? "open" : ""}`}></i>
+                        <i className="fa-solid fa-bars"></i>
                     </button>
 
-                    {modelMenuOpen && (
-                        <div className="model-menu-dropdown">
-                            <div className="model-menu-header">
-                                <span className="header-title">Select Model</span>
-                                <span className="header-subtitle">Groq LPU Inference</span>
-                            </div>
-                            <div className="model-menu-list">
+                    {/* Model Selector Dropdown */}
+                    <div className="model-selector-wrapper" ref={modelMenuRef}>
+                        <button
+                            type="button"
+                            className={`model-selector-btn ${modelMenuOpen ? "active" : ""}`}
+                            onClick={() => setModelMenuOpen(!modelMenuOpen)}
+                            aria-label="Select AI Model"
+                        >
+                            <span className="brand-name">BuddyBOT</span>
+                            <span className="active-model-pill">
+                                <i className="fa-solid fa-bolt"></i>
+                                <span>{activeModelObj.name}</span>
+                            </span>
+                            <i className={`fa-solid fa-chevron-down chevron-icon ${modelMenuOpen ? "open" : ""}`}></i>
+                        </button>
+
+                        {modelMenuOpen && (
+                            <div className="model-menu-dropdown">
+                                <div className="model-menu-header">
+                                    <span className="header-title">Select Model</span>
+                                    <span className="header-subtitle">Groq LPU Inference</span>
+                                </div>
+                                <div className="model-menu-list">
                                 {models.map((m) => {
                                     const isSelected = selectedModel === m.id;
                                     return (
@@ -193,6 +205,7 @@ function ChatWindow() {
                             </div>
                         </div>
                     )}
+                </div>
                 </div>
 
                 {/* User Auth actions or Profile Icon */}

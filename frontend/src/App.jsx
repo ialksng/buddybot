@@ -158,8 +158,14 @@ function App() {
   const [newChat, setNewChat] = useState(true);
   const [allThreads, setAllThreads] = useState([]);
   const [selectedModel, setSelectedModel] = useState(() => {
-    return localStorage.getItem("selected_model") || "llama-3.1-8b-instant";
+    const saved = localStorage.getItem("selected_model");
+    if (!saved || saved.includes("llama") || saved.includes("gemma") || saved.includes("mixtral")) {
+      return "openai/gpt-oss-120b";
+    }
+    return saved;
   });
+
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   useEffect(() => {
     localStorage.setItem("selected_model", selectedModel);
@@ -188,6 +194,8 @@ function App() {
     setSelectedModel,
     currentUser,
     setCurrentUser,
+    isSidebarOpen,
+    setIsSidebarOpen,
   };
 
   if (!isAuthReady) return null; // wait until we check token

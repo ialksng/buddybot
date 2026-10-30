@@ -22,6 +22,34 @@
     z-index: 100;
 }
 
+.nav-left-group {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+}
+
+.mobile-hamburger-btn {
+    display: none;
+    background: rgba(255, 255, 255, 0.18);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.28);
+    color: #ffffff;
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+}
+
+.mobile-hamburger-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+    border-color: rgba(255, 255, 255, 0.45);
+}
+
 /* Model Selector */
 .model-selector-wrapper {
     position: relative;
@@ -473,6 +501,108 @@ input::placeholder {
     font-size: 0.75rem;
     padding: 0.5rem;
     color: rgba(255, 255, 255, 0.7);
+}
+
+@media (max-width: 768px) {
+    .mobile-hamburger-btn {
+        display: flex;
+    }
+
+    .navbar {
+        padding: 0.6rem 0.75rem;
+        gap: 0.4rem;
+    }
+
+    .model-selector-btn {
+        padding: 0.38rem 0.65rem;
+        font-size: 0.85rem;
+        gap: 0.45rem;
+    }
+
+    .active-model-pill {
+        font-size: 0.68rem;
+        padding: 0.12rem 0.4rem;
+    }
+
+    .active-model-pill span {
+        max-width: 85px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .model-menu-dropdown {
+        width: min(320px, calc(100vw - 1.5rem));
+        left: 0;
+    }
+
+    .userProfilePill {
+        padding: 0.3rem 0.55rem 0.3rem 0.35rem;
+        gap: 0.4rem;
+    }
+
+    .userProfileName {
+        max-width: 80px;
+        font-size: 0.82rem;
+    }
+
+    .userAvatarCircle {
+        width: 26px;
+        height: 26px;
+        font-size: 0.78rem;
+    }
+
+    .userProfileDropdown {
+        width: min(240px, calc(100vw - 1.5rem)) !important;
+        right: 0;
+    }
+
+    .chatInput {
+        padding: 0 0.5rem 0.6rem 0.5rem;
+    }
+
+    input {
+        padding: 0.85rem 3.2rem 0.85rem 0.95rem;
+        font-size: 0.9rem;
+        border-radius: 14px;
+    }
+
+    #submit {
+        height: 32px;
+        width: 32px;
+        right: 8px;
+        font-size: 14px;
+        border-radius: 8px;
+    }
+
+    .guest-limit-banner {
+        font-size: 0.76rem;
+        padding: 0.45rem 0.85rem;
+        width: 95%;
+    }
+
+    .info {
+        font-size: 0.68rem;
+        padding: 0.35rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .brand-name {
+        display: none;
+    }
+
+    .model-selector-btn {
+        padding: 0.35rem 0.55rem;
+    }
+
+    .userProfileName {
+        display: none;
+    }
+
+    .userProfilePill {
+        padding: 0.25rem 0.4rem 0.25rem 0.25rem;
+    }
 }
 
 @keyframes dropdownFade {
