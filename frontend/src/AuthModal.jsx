@@ -1,11 +1,52 @@
 import "./AuthModal.css";
-import { Link } from "react-router-dom";
+import { useState } from "react";
+import axios from "axios";
 import buddyBotLogo from "./assets/buddy-bot.png";
 
-export default function AuthModal({ isOpen, onClose }) {
+export default function AuthModal({ isOpen, onClose, onAuthSuccess }) {
   if (!isOpen) return null;
 
+  const [mode, setMode] = useState("signup"); // "signup" or "login"
+  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+
   const API_URL = import.meta.env.VITE_API_URL || "";
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError("");
+    setLoading(true);
+
+    try {
+      const endpoint = mode === "signup" ? `${API_URL}/api/auth/signup` : `${API_URL}/api/auth/login`;
+      const payload = mode === "signup" ? { username, email, password } : { email, password };
+
+      const { data } = await axios.post(endpoint, payload);
+      localStorage.setItem("token", data.token);
+      localStorage.removeItem("guest_msg_count");
+
+      // Claim guest thread if exists
+      const guestThreadId = localStorage.getItem("guest_thread_id");
+      if (guestThreadId) {
+        axios.post(`${API_URL}/api/claim-thread`, { threadId: guestThreadId }, {
+          headers: { Authorization: `Bearer ${data.token}` }
+        }).catch(() => {});
+        localStorage.removeItem("guest_thread_id");
+      }
+
+      if (onAuthSuccess) {
+        onAuthSuccess(data.token, data.user);
+      }
+      onClose();
+    } catch (err) {
+      setError(err.response?.data?.message || `${mode === "signup" ? "Signup" : "Login"} failed. Please try again.`);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleGoogle = () => {
     window.location.href = `${API_URL}/api/auth/google`;
@@ -20,36 +61,87 @@ export default function AuthModal({ isOpen, onClose }) {
 
         <div className="auth-modal-header">
           <img src={buddyBotLogo} alt="BuddyBOT" className="auth-modal-logo" />
-          <h2>Welcome to BuddyBOT</h2>
-          <p>Log in or sign up to continue chatting and start saving your conversation history.</p>
+          <h2>{mode === "signup" ? "Create an account" : "Welcome back"}</h2>
+          <p>
+            {mode === "signup"
+              ? "Sign up to continue chatting and start saving your conversation history."
+              : "Log in to access your chat history and continue conversations."}
+          </p>
         </div>
 
-        <div className="auth-modal-actions">
-          <Link to="/signup" className="auth-modal-btn signup-btn" onClick={onClose}>
+        {/* Tab switch */}
+        <div className="auth-modal-tabs">
+          <button
+            type="button"
+            className={`auth-modal-tab ${mode === "signup" ? "active" : ""}`}
+            onClick={() => { setMode("signup"); setError(""); }}
+          >
             Sign up
-          </Link>
-          <Link to="/login" className="auth-modal-btn login-btn" onClick={onClose}>
+          </button>
+          <button
+            type="button"
+            className={`auth-modal-tab ${mode === "login" ? "active" : ""}`}
+            onClick={() => { setMode("login"); setError(""); }}
+          >
             Log in
-          </Link>
-
-          <div className="auth-modal-divider">
-            <span>OR</span>
-          </div>
-
-          <button className="auth-modal-google" onClick={handleGoogle}>
-            <img
-              src="https://developers.google.com/identity/images/g-logo.png"
-              alt="Google"
-            />
-            Continue with Google
           </button>
         </div>
 
+        {error && <div className="auth-modal-error">{error}</div>}
+
+        <form onSubmit={handleSubmit} className="auth-modal-form">
+          {mode === "signup" && (
+            <input
+              type="text"
+              placeholder="Full name"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              required
+              className="auth-modal-input"
+            />
+          )}
+          <input
+            type="email"
+            placeholder="Email address"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+            className="auth-modal-input"
+          />
+          <input
+            type="password"
+            placeholder="Password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+            className="auth-modal-input"
+          />
+
+          <button type="submit" className="auth-modal-submit" disabled={loading}>
+            {loading ? "Please wait..." : mode === "signup" ? "Create Free Account" : "Log In"}
+          </button>
+        </form>
+
+        <div className="auth-modal-divider">
+          <span>OR</span>
+        </div>
+
+        <button type="button" className="auth-modal-google" onClick={handleGoogle}>
+          <img
+            src="https://developers.google.com/identity/images/g-logo.png"
+            alt="Google"
+          />
+          Continue with Google
+        </button>
+
         <p className="auth-modal-footer">
-          Free account • No credit card required • Instant access
+          {mode === "signup" ? (
+            <>Already have an account? <span onClick={() => { setMode("login"); setError(""); }} className="auth-modal-link">Log in</span></>
+          ) : (
+            <>Don't have an account? <span onClick={() => { setMode("signup"); setError(""); }} className="auth-modal-link">Sign up</span></>
+          )}
         </p>
       </div>
     </div>
   );
 }
-

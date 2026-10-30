@@ -25,8 +25,15 @@ function ChatWindow() {
     const handleLogout = () => {
         localStorage.removeItem("token");
         setIsAuthenticated(false);
-        const baseUrl = (import.meta.env.BASE_URL || "/work/projects/buddybot/app").replace(/\/$/, "");
-        window.location.href = `${baseUrl}/login`;
+        setGuestCount(0);
+        localStorage.removeItem("guest_msg_count");
+        localStorage.removeItem("guest_thread_id");
+        setAllThreads([]);
+        setPrevChats([]);
+        setNewChat(true);
+        setPrompt("");
+        setReply(null);
+        setIsOpen(false);
     };
 
     const getReply = async () => {
@@ -161,7 +168,14 @@ function ChatWindow() {
                 </p>
             </div>
 
-            <AuthModal isOpen={showAuthModal} onClose={() => setShowAuthModal(false)} />
+            <AuthModal
+                isOpen={showAuthModal}
+                onClose={() => setShowAuthModal(false)}
+                onAuthSuccess={() => {
+                    setIsAuthenticated(true);
+                    setGuestCount(0);
+                }}
+            />
         </div>
     );
 }

@@ -32,6 +32,7 @@
   padding: 2.25rem 2rem;
   box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.1);
   text-align: center;
+  box-sizing: border-box;
 }
 
 .auth-modal-close {
@@ -58,77 +59,125 @@
 }
 
 .auth-modal-header {
-  margin-bottom: 1.75rem;
+  margin-bottom: 1.25rem;
 }
 
 .auth-modal-logo {
-  width: 58px;
-  height: 58px;
+  width: 54px;
+  height: 54px;
   border-radius: 14px;
-  margin-bottom: 1rem;
+  margin-bottom: 0.75rem;
   box-shadow: 0 8px 24px rgba(239, 119, 34, 0.35);
 }
 
 .auth-modal-header h2 {
-  font-size: 1.5rem;
+  font-size: 1.4rem;
   font-weight: 700;
-  margin: 0 0 0.5rem 0;
+  margin: 0 0 0.4rem 0;
   color: #ffffff;
 }
 
 .auth-modal-header p {
   color: #94a3b8;
-  font-size: 0.92rem;
+  font-size: 0.88rem;
   line-height: 1.45;
   margin: 0;
 }
 
-.auth-modal-actions {
+/* Tabs */
+.auth-modal-tabs {
+  display: flex;
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 12px;
+  padding: 4px;
+  margin-bottom: 1.25rem;
+  gap: 4px;
+}
+
+.auth-modal-tab {
+  flex: 1;
+  border: none;
+  background: transparent;
+  color: #94a3b8;
+  padding: 0.55rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.auth-modal-tab.active {
+  background: #334155;
+  color: #ffffff;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+}
+
+.auth-modal-error {
+  background: rgba(239, 68, 68, 0.15);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  color: #fca5a5;
+  padding: 0.6rem 0.8rem;
+  border-radius: 10px;
+  font-size: 0.82rem;
+  margin-bottom: 1rem;
+  text-align: left;
+}
+
+/* Form */
+.auth-modal-form {
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
 }
 
-.auth-modal-btn {
-  display: block;
-  width: 100%;
-  padding: 0.8rem 1rem;
-  border-radius: 12px;
-  font-size: 0.95rem;
-  font-weight: 600;
-  text-decoration: none;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  box-sizing: border-box;
+.auth-modal-input {
+  width: 100% !important;
+  background: rgba(255, 255, 255, 0.07) !important;
+  border: 1px solid rgba(255, 255, 255, 0.15) !important;
+  color: #ffffff !important;
+  border-radius: 10px !important;
+  padding: 0.75rem 1rem !important;
+  font-size: 0.9rem !important;
+  box-sizing: border-box !important;
+  box-shadow: none !important;
 }
 
-.auth-modal-btn.signup-btn {
+.auth-modal-input:focus {
+  outline: none !important;
+  border-color: #ef7722 !important;
+  background: rgba(255, 255, 255, 0.1) !important;
+}
+
+.auth-modal-submit {
+  width: 100%;
+  padding: 0.8rem 1rem;
+  border-radius: 10px;
+  font-size: 0.92rem;
+  font-weight: 600;
   background: #ef7722;
   color: #ffffff;
   border: none;
-  box-shadow: 0 4px 14px rgba(239, 119, 34, 0.4);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 14px rgba(239, 119, 34, 0.35);
+  margin-top: 0.25rem;
 }
 
-.auth-modal-btn.signup-btn:hover {
+.auth-modal-submit:hover:not(:disabled) {
   background: #d96515;
   transform: translateY(-1px);
 }
 
-.auth-modal-btn.login-btn {
-  background: rgba(255, 255, 255, 0.08);
-  color: #f1f5f9;
-  border: 1px solid rgba(255, 255, 255, 0.15);
-}
-
-.auth-modal-btn.login-btn:hover {
-  background: rgba(255, 255, 255, 0.15);
-  color: #ffffff;
+.auth-modal-submit:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 .auth-modal-divider {
   display: flex;
   align-items: center;
-  margin: 0.5rem 0;
+  margin: 0.9rem 0;
   color: #64748b;
   font-size: 0.75rem;
   font-weight: 600;
@@ -154,9 +203,9 @@
   background: #ffffff;
   color: #1e293b;
   border: none;
-  border-radius: 12px;
-  padding: 0.8rem 1rem;
-  font-size: 0.92rem;
+  border-radius: 10px;
+  padding: 0.75rem 1rem;
+  font-size: 0.9rem;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s ease;
@@ -174,8 +223,18 @@
 }
 
 .auth-modal-footer {
-  margin-top: 1.5rem;
-  font-size: 0.75rem;
-  color: #64748b;
+  margin-top: 1.25rem;
+  font-size: 0.82rem;
+  color: #94a3b8;
 }
 
+.auth-modal-link {
+  color: #ef7722;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.auth-modal-link:hover {
+  color: #f97316;
+}

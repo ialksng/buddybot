@@ -11,43 +11,75 @@ import Dashboard from "./pages/Dashboard.jsx";
 
 function App() {
   const [isAuthReady, setIsAuthReady] = useState(false);
-  const [isAuthenticated, setIsAuthenticated] = useState(
-    !!localStorage.getItem("token")
-  );
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [guestCount, setGuestCount] = useState(() => {
     return parseInt(localStorage.getItem("guest_msg_count") || "0", 10);
   });
   const [showAuthModal, setShowAuthModal] = useState(false);
 
-  // ✅ Capture Google token early
+  // Validate authentication state on mount
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-    const token = params.get("token");
+    const tokenFromUrl = params.get("token");
 
-    if (token) {
-      localStorage.setItem("token", token);
-      setIsAuthenticated(true);
+    if (tokenFromUrl) {
+      localStorage.setItem("token", tokenFromUrl);
       localStorage.removeItem("guest_msg_count");
       setGuestCount(0);
-      window.history.replaceState({}, "", window.location.pathname); // clean URL without stripping subpath
-
-      // Claim guest thread if exists
-      const guestThreadId = localStorage.getItem("guest_thread_id");
-      if (guestThreadId) {
-        const API_URL = import.meta.env.VITE_API_URL || "";
-        fetch(`${API_URL}/api/claim-thread`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${token}`
-          },
-          body: JSON.stringify({ threadId: guestThreadId })
-        }).catch(err => console.log(err));
-        localStorage.removeItem("guest_thread_id");
-      }
+      window.history.replaceState({}, "", window.location.pathname);
     }
 
-    setIsAuthReady(true);
+    const token = tokenFromUrl || localStorage.getItem("token");
+
+    // If no token, cleanly start as a guest user
+    if (!token || token === "undefined" || token === "null" || token.trim() === "") {
+      localStorage.removeItem("token");
+      setIsAuthenticated(false);
+      setIsAuthReady(true);
+      return;
+    }
+
+    // Verify token with backend
+    const API_URL = import.meta.env.VITE_API_URL || "";
+    fetch(`${API_URL}/api/auth/me`, {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    })
+      .then(res => res.json())
+      .then(data => {
+        if (data.authenticated) {
+          setIsAuthenticated(true);
+          localStorage.removeItem("guest_msg_count");
+          setGuestCount(0);
+
+          // Claim guest thread if exists
+          const guestThreadId = localStorage.getItem("guest_thread_id");
+          if (guestThreadId) {
+            fetch(`${API_URL}/api/claim-thread`, {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`
+              },
+              body: JSON.stringify({ threadId: guestThreadId })
+            }).catch(e => console.log(e));
+            localStorage.removeItem("guest_thread_id");
+          }
+        } else {
+          // Token expired or invalid: reset cleanly to guest!
+          localStorage.removeItem("token");
+          setIsAuthenticated(false);
+        }
+      })
+      .catch(() => {
+        // If server fails or offline, fall back to guest
+        localStorage.removeItem("token");
+        setIsAuthenticated(false);
+      })
+      .finally(() => {
+        setIsAuthReady(true);
+      });
   }, []);
 
   const [prompt, setPrompt] = useState("");

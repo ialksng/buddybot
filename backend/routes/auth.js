@@ -12,6 +12,20 @@ router.post("/signup", signup);
 router.post("/login", login);
 router.post("/forgot-password", forgotPassword);
 
+// Verify current session / token
+router.get("/me", (req, res) => {
+  const token = req.headers.authorization?.split(" ")[1];
+  if (!token || token === "null" || token === "undefined") {
+    return res.status(401).json({ authenticated: false });
+  }
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || "buddybot_jwt_secret");
+    return res.json({ authenticated: true, user: decoded });
+  } catch (err) {
+    return res.status(401).json({ authenticated: false });
+  }
+});
+
 // ----------------------
 // 🌐 Google OAuth Routes
 // ----------------------
