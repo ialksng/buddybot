@@ -37,7 +37,9 @@ https://ialksng.me/work/projects/buddybot/app
 | `CLIENT_URL` | Your frontend production URL | `https://ialksng.me/work/projects/buddybot/app` |
 | `GOOGLE_CLIENT_ID` | *(Optional)* Google OAuth Client ID | `xxx.apps.googleusercontent.com` |
 | `GOOGLE_CLIENT_SECRET` | *(Optional)* Google OAuth Client Secret | `GOCSPX-xxx` |
-| `GOOGLE_CALLBACK_URL` | *(Optional)* Google OAuth Callback URL | `https://ialksng.me/work/projects/buddybot/app/api/auth/google/callback` |
+| `EMAIL_USER` | *(Optional)* Your Gmail address for sending emails | `your_account@gmail.com` |
+| `EMAIL_PASS` | *(Optional)* Gmail 16-character App Password | `xxxx xxxx xxxx xxxx` |
+| `EMAIL_FROM` | *(Optional)* Custom sender alias name and address | `"BuddyBot <no-reply@ialksng.me>"` |
 
 6. Click **Deploy**. Vercel will build the frontend and deploy the serverless API.
 
